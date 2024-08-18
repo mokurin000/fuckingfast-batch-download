@@ -5,7 +5,6 @@ description = "Default template for PDM package"
 authors = [{ name = "mokurin000", email = "1348292515a@gmail.com" }]
 dependencies = [
     "playwright>=1.46.0",
-    "setuptools>=72.2.0",        # implict depend of stealth
 ]
 requires-python = ">=3.11"
 readme = "README.md"
