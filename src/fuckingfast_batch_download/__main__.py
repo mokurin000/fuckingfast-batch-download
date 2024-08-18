@@ -38,7 +38,7 @@ async def main():
 
         browser = await playwright.chromium.launch(headless=True)
         ctx = await browser.new_context(user_agent=USER_AGENT, locale="en_US")
-        await ctx.tracing.start()
+        await ctx.tracing.start(screenshots=True, snapshots=True, name='fuckingfast')
         ctx.on("page", on_page)
         page = await ctx.new_page()
 
