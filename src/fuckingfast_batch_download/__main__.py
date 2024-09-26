@@ -21,10 +21,10 @@ async def worker(tasks: Queue[Coroutine]):
             break
 
         await coro
+        tasks.task_done()
 
 
-async def extract_url_to_aria2(ctx: BrowserContext, url: str):
-    page = await ctx.new_page()
+async def extract_url_page(page: Page, url: str, close_page=False):
     await page.goto(url)
 
     download_loc = page.locator("button.link-button")
@@ -34,10 +34,16 @@ async def extract_url_to_aria2(ctx: BrowserContext, url: str):
 
     download = await download_info.value
     await download.cancel()
-    await page.close()
+    if close_page:
+        await page.close()
 
     filename = url.split("#")[-1]
     print(download.url, f"    out={filename}", "    continue=true", sep="\n")
+
+
+async def extract_url_ctx(ctx: BrowserContext, url: str):
+    page = await ctx.new_page()
+    await extract_url_page(page, url, close_page=True)
 
 
 async def main():
@@ -59,12 +65,17 @@ async def main():
         ctx.on("page", on_page)
         await ctx.tracing.start(screenshots=True, snapshots=True, name="fuckingfast")
 
-        tasks = Queue()
-        for url in urls:
-            await tasks.put(extract_url_to_aria2(ctx, url))
+        if MAX_WORKERS > 1:
+            tasks = Queue()
+            for url in urls:
+                await tasks.put(extract_url_ctx(ctx, url))
 
-        workers = [worker(tasks) for _ in range(MAX_WORKERS)]
-        await asyncio.gather(*workers)
+            workers = [worker(tasks) for _ in range(MAX_WORKERS)]
+            await asyncio.gather(*workers)
+        else:
+            page = await ctx.new_page()
+            for url in urls:
+                await extract_url_page(page, url)
 
         await ctx.tracing.stop(path="trace.zip")
         await ctx.close()
