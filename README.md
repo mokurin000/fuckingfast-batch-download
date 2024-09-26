@@ -10,6 +10,11 @@ pip3 install -e .
 
 ## Usage
 
+### Environment Variables
+
+- `MAX_WORKERS` - maximium workers runnning parallel
+- `TIMEOUT_PER_PAGE` - timeout (in millisecond) per page for `expect_download`
+
 ```bash
 # First paste `fetch-links/sites/fitgirl.js` to your web-devtools console
 # Copy the result array with 'Copy Object'
