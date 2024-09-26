@@ -2,15 +2,14 @@ import asyncio
 import urllib
 import urllib.parse
 
-from playwright.async_api import async_playwright, Page, BrowserContext
+from playwright.async_api import async_playwright, Page
 
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 GLS/100.10.9939.100"
 
 TIMEOUT_PER_PAGE = 5_000
 
 
-async def extract_url_to_aria2(ctx: BrowserContext, url: str):
-    page = await ctx.new_page()
+async def extract_url_to_aria2(page: Page, url: str):
     await page.goto(url)
 
     download_loc = page.locator("button.link-button")
@@ -20,7 +19,6 @@ async def extract_url_to_aria2(ctx: BrowserContext, url: str):
 
     download = await download_info.value
     await download.cancel()
-    await page.close()
 
     filename = url.split("#")[-1]
     print(download.url, f"     out={filename}", sep="\n")
@@ -45,8 +43,10 @@ async def main():
         ctx.on("page", on_page)
         await ctx.tracing.start(screenshots=True, snapshots=True, name="fuckingfast")
 
+        page = await ctx.new_page()
+
         for url in urls:
-            await extract_url_to_aria2(ctx, url)
+            await extract_url_to_aria2(page, url)
 
         await ctx.tracing.stop(path="trace.zip")
         await ctx.close()
