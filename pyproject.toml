@@ -1,15 +1,8 @@
 [project]
 name = "fuckingfast-batch-download"
 version = "0.1.0"
-description = "Default template for PDM package"
-authors = [{ name = "mokurin000", email = "1348292515a@gmail.com" }]
-dependencies = [
-    "playwright>=1.46.0",
-]
-requires-python = ">=3.11"
+description = "Add your description here"
 readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["playwright>=1.47.0"]
 license = { text = "MIT" }
-
-
-[tool.pdm]
-distribution = false
