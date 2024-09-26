@@ -22,7 +22,8 @@ async def extract_url_to_aria2(ctx: BrowserContext, url: str):
     await download.cancel()
     await page.close()
 
-    print(download.url, f"     out={url.split("#")[-1]}", sep="\n")
+    filename = url.split("#")[-1]
+    print(download.url, f"     out={filename}", sep="\n")
 
 
 async def main():
