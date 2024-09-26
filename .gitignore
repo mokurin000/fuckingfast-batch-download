@@ -163,3 +163,7 @@ cython_debug/
 
 *.txt
 trace.zip
+
+*.rar
+*.bin
+*.aria2
