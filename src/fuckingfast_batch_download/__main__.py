@@ -2,7 +2,7 @@ import os
 import asyncio
 import urllib
 import urllib.parse
-from asyncio import Queue, QueueEmpty
+from asyncio import Queue
 from collections.abc import Coroutine
 
 from playwright.async_api import async_playwright, Page, BrowserContext
@@ -13,13 +13,9 @@ TIMEOUT_PER_PAGE = int(os.environ.get("TIMEOUT_PER_PAGE", 5_000))
 MAX_WORKERS = int(os.environ.get("MAX_WORKERS", 2))
 
 
-async def worker(tasks: Queue[Coroutine]):
+async def worker_func(tasks: Queue[Coroutine]):
     while True:
-        try:
-            coro = tasks.get_nowait()
-        except QueueEmpty:
-            break
-
+        coro = await tasks.get()
         await coro
         tasks.task_done()
 
@@ -67,11 +63,16 @@ async def main():
 
         if MAX_WORKERS > 1:
             tasks = Queue()
+            workers = [
+                asyncio.create_task(worker_func(tasks)) for _ in range(MAX_WORKERS)
+            ]
+
             for url in urls:
                 await tasks.put(extract_url_ctx(ctx, url))
+            await tasks.join()
 
-            workers = [worker(tasks) for _ in range(MAX_WORKERS)]
-            await asyncio.gather(*workers)
+            for worker in workers:
+                worker.cancel()
         else:
             page = await ctx.new_page()
             for url in urls:
