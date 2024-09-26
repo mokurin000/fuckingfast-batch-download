@@ -22,7 +22,7 @@ async def extract_url_to_aria2(page: Page, url: str):
     await download.cancel()
 
     filename = url.split("#")[-1]
-    print(download.url, f"     out={filename}", sep="\n")
+    print(download.url, f"     out={filename}", "    continue=true", sep="\n")
     sys.stdout.flush()
 
 
