@@ -1,3 +1,4 @@
+import os
 import asyncio
 import urllib
 import urllib.parse
@@ -8,14 +9,14 @@ from playwright.async_api import async_playwright, Page, BrowserContext
 
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 GLS/100.10.9939.100"
 
-TIMEOUT_PER_PAGE = 5_000
-MAX_WORKERS = 2
+TIMEOUT_PER_PAGE = int(os.environ.get("TIMEOUT_PER_PAGE", 5_000))
+MAX_WORKERS = int(os.environ.get("MAX_WORKERS", 2))
 
 
 async def worker(tasks: Queue[Coroutine]):
     while True:
         try:
-            coro = await tasks.get_nowait()
+            coro = tasks.get_nowait()
         except QueueEmpty:
             break
 
