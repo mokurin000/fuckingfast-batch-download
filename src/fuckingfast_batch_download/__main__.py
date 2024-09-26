@@ -42,10 +42,11 @@ async def main():
 
         browser = await playwright.chromium.launch(headless=False)
         ctx = await browser.new_context(user_agent=USER_AGENT, locale="en_US")
-        await ctx.tracing.start(screenshots=True, snapshots=True, name="fuckingfast")
         ctx.on("page", on_page)
+        await ctx.tracing.start(screenshots=True, snapshots=True, name="fuckingfast")
 
-        await asyncio.gather(*(extract_url_to_aria2(ctx, url) for url in urls))
+        for url in urls:
+            await extract_url_to_aria2(ctx, url)
 
         await ctx.tracing.stop(path="trace.zip")
         await ctx.close()
