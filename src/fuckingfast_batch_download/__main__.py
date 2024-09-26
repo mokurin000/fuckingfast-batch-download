@@ -1,3 +1,4 @@
+import sys
 import asyncio
 import urllib
 import urllib.parse
@@ -22,6 +23,7 @@ async def extract_url_to_aria2(page: Page, url: str):
 
     filename = url.split("#")[-1]
     print(download.url, f"     out={filename}", sep="\n")
+    sys.stdout.flush()
 
 
 async def main():
@@ -38,7 +40,7 @@ async def main():
             if parsed.hostname != "fuckingfast.co":
                 return page.close()
 
-        browser = await playwright.chromium.launch(headless=False)
+        browser = await playwright.chromium.launch(headless=True)
         ctx = await browser.new_context(user_agent=USER_AGENT, locale="en_US")
         ctx.on("page", on_page)
         await ctx.tracing.start(screenshots=True, snapshots=True, name="fuckingfast")
