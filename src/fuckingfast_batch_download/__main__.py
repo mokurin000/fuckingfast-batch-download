@@ -1,16 +1,29 @@
-import sys
 import asyncio
 import urllib
 import urllib.parse
+from asyncio import Queue, QueueEmpty
+from collections.abc import Coroutine
 
-from playwright.async_api import async_playwright, Page
+from playwright.async_api import async_playwright, Page, BrowserContext
 
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 GLS/100.10.9939.100"
 
 TIMEOUT_PER_PAGE = 5_000
+MAX_WORKERS = 2
 
 
-async def extract_url_to_aria2(page: Page, url: str):
+async def worker(tasks: Queue[Coroutine]):
+    while True:
+        try:
+            coro = await tasks.get_nowait()
+        except QueueEmpty:
+            break
+
+        await coro
+
+
+async def extract_url_to_aria2(ctx: BrowserContext, url: str):
+    page = await ctx.new_page()
     await page.goto(url)
 
     download_loc = page.locator("button.link-button")
@@ -20,10 +33,10 @@ async def extract_url_to_aria2(page: Page, url: str):
 
     download = await download_info.value
     await download.cancel()
+    await page.close()
 
     filename = url.split("#")[-1]
     print(download.url, f"    out={filename}", "    continue=true", sep="\n")
-    sys.stdout.flush()
 
 
 async def main():
@@ -40,15 +53,17 @@ async def main():
             if parsed.hostname != "fuckingfast.co":
                 return page.close()
 
-        browser = await playwright.chromium.launch(headless=True)
+        browser = await playwright.chromium.launch(headless=False)
         ctx = await browser.new_context(user_agent=USER_AGENT, locale="en_US")
         ctx.on("page", on_page)
         await ctx.tracing.start(screenshots=True, snapshots=True, name="fuckingfast")
 
-        page = await ctx.new_page()
-
+        tasks = Queue()
         for url in urls:
-            await extract_url_to_aria2(page, url)
+            await tasks.put(extract_url_to_aria2(ctx, url))
+
+        workers = [worker(tasks) for _ in range(MAX_WORKERS)]
+        await asyncio.gather(*workers)
 
         await ctx.tracing.stop(path="trace.zip")
         await ctx.close()
