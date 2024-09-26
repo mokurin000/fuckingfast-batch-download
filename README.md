@@ -12,7 +12,7 @@ pip3 install -e .
 
 ### Environment Variables
 
-- `MAX_WORKERS` - maximium workers runnning parallel
+- `MAX_WORKERS` - maximium workers runnning parallel, only increment this when you have proxy pool connected!
 - `TIMEOUT_PER_PAGE` - timeout (in millisecond) per page for `expect_download`
 
 ```bash
