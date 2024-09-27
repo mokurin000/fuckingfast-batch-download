@@ -8,16 +8,13 @@ from collections.abc import Coroutine
 
 from tqdm.asyncio import tqdm_asyncio
 from tqdm.contrib.logging import logging_redirect_tqdm
-from aiofile import async_open
-from playwright.async_api import async_playwright, Page, BrowserContext
+from playwright.async_api import async_playwright, Page
 
+import fuckingfast_batch_download.config as config
 from fuckingfast_batch_download.exceptions import RateLimited
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
-)
-logger = logging.getLogger(__name__)
+from fuckingfast_batch_download.utils import consume_tasks
+from fuckingfast_batch_download.log import logger
+from fuckingfast_batch_download.scrap import extract_url_ctx, extract_url_page
 
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 GLS/100.10.9939.100"
 
@@ -34,39 +31,9 @@ async def worker_func(tasks: Queue[Coroutine], tqdm: tqdm_asyncio):
             tasks.task_done()
 
             logging.error("rate limit! exiting")
-            while True:
-                await tasks.get()
-                tasks.task_done()
+            await consume_tasks(tasks)
         tqdm.update()
         tasks.task_done()
-
-
-async def extract_url_page(page: Page, url: str, aria2c_file, close_page=False):
-    logger.info(f"Navigating to URL: {url}")
-    await page.goto(url)
-
-    if "rate limit" in await page.content():
-        raise RateLimited()
-    download_loc = page.locator("button.link-button")
-    async with page.expect_download(timeout=TIMEOUT_PER_PAGE) as download_info:
-        logger.info("Initiating download...")
-        await download_loc.click()
-        await download_loc.click()
-
-    download = await download_info.value
-    await download.cancel()
-    if close_page:
-        await page.close()
-
-    filename = url.split("#")[-1]
-    async with async_open(aria2c_file, "a", encoding="utf-8") as f:
-        await f.write(f"{download.url}\n    out={filename}\n    continue=true\n")
-    logger.info(f"Download URL: {download.url}, Filename: {filename}")
-
-
-async def extract_url_ctx(ctx: BrowserContext, url: str, aria2c_file):
-    page = await ctx.new_page()
-    await extract_url_page(page, url, aria2c_file, close_page=True)
 
 
 def blocking_run(args):
@@ -75,18 +42,12 @@ def blocking_run(args):
 
 
 async def run(args):
-    global TIMEOUT_PER_PAGE
-    global MAX_WORKERS
-    global URLs_FILE
-    global ARIA2C_FILE
+    config.TIMEOUT_PER_PAGE = int(args.timeout)
+    config.MAX_WORKERS = int(args.max_workers)
+    config.URLS_FILE = args.urls_file
+    config.ARIA2C_FILE = args.aria2c_file
 
-    # Set from CLI args
-    TIMEOUT_PER_PAGE = int(args.timeout)
-    MAX_WORKERS = int(args.max_workers)
-    URLs_FILE = args.urls_file
-    ARIA2C_FILE = args.aria2c_file
-
-    with open(URLs_FILE, "r", encoding="utf-8") as urls:
+    with open(config.URLS_FILE, "r", encoding="utf-8") as urls:
         urls = [url for url in urls.read().split("\n") if url]
 
     async with async_playwright() as playwright:
@@ -106,16 +67,16 @@ async def run(args):
         ctx.on("page", on_page)
         await ctx.tracing.start(screenshots=True, snapshots=True, name="fuckingfast")
 
-        if MAX_WORKERS > 1:
+        if config.MAX_WORKERS > 1:
             tasks = Queue()
             tqdm = tqdm_asyncio(total=len(urls))
             workers = [
                 asyncio.create_task(worker_func(tasks, tqdm), name=f"worker_{i+1}")
-                for i in range(MAX_WORKERS)
+                for i in range(config.MAX_WORKERS)
             ]
 
             for url in urls:
-                await tasks.put(extract_url_ctx(ctx, url, ARIA2C_FILE))
+                await tasks.put(extract_url_ctx(ctx, url, config.ARIA2C_FILE))
             await tasks.join()
 
             for worker in workers:
@@ -123,7 +84,7 @@ async def run(args):
         else:
             page = await ctx.new_page()
             for url in tqdm_asyncio(urls):
-                await extract_url_page(page, url, ARIA2C_FILE)
+                await extract_url_page(page, url, config.ARIA2C_FILE)
 
         await ctx.tracing.stop(path="trace.zip")
         await ctx.close()
