@@ -11,6 +11,8 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 from aiofile import async_open
 from playwright.async_api import async_playwright, Page, BrowserContext
 
+from fuckingfast_batch_download.exceptions import RateLimited
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
@@ -26,7 +28,15 @@ async def worker_func(tasks: Queue[Coroutine], tqdm: tqdm_asyncio):
         logger.info(
             f"Worker {asyncio.current_task().get_name()} executing task: {coro}"
         )
-        await coro
+        try:
+            await coro
+        except RateLimited:
+            tasks.task_done()
+
+            logging.error("rate limit! exiting")
+            while True:
+                await tasks.get()
+                tasks.task_done()
         tqdm.update()
         tasks.task_done()
 
@@ -35,6 +45,8 @@ async def extract_url_page(page: Page, url: str, aria2c_file, close_page=False):
     logger.info(f"Navigating to URL: {url}")
     await page.goto(url)
 
+    if "rate limit" in await page.content():
+        raise RateLimited()
     download_loc = page.locator("button.link-button")
     async with page.expect_download(timeout=TIMEOUT_PER_PAGE) as download_info:
         logger.info("Initiating download...")
