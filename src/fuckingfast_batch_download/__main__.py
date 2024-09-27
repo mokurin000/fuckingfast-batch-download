@@ -6,6 +6,8 @@ from pathlib import Path
 from asyncio import Queue
 from collections.abc import Coroutine
 
+from tqdm import tqdm
+from tqdm.contrib.logging import logging_redirect_tqdm
 from aiofile import async_open
 from playwright.async_api import async_playwright, Page, BrowserContext
 
@@ -105,8 +107,9 @@ async def run(args):
                 worker.cancel()
         else:
             page = await ctx.new_page()
-            for url in urls:
-                await extract_url_page(page, url, ARIA2C_FILE)
+            with logging_redirect_tqdm():
+                for url in tqdm(urls):
+                    await extract_url_page(page, url, ARIA2C_FILE)
 
         await ctx.tracing.stop(path="trace.zip")
         await ctx.close()
