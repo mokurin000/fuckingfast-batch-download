@@ -6,7 +6,7 @@ from pathlib import Path
 from asyncio import Queue
 from collections.abc import Coroutine
 
-from tqdm import tqdm
+from tqdm.asyncio import tqdm_asyncio
 from tqdm.contrib.logging import logging_redirect_tqdm
 from aiofile import async_open
 from playwright.async_api import async_playwright, Page, BrowserContext
@@ -20,13 +20,14 @@ logger = logging.getLogger(__name__)
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 GLS/100.10.9939.100"
 
 
-async def worker_func(tasks: Queue[Coroutine]):
+async def worker_func(tasks: Queue[Coroutine], tqdm: tqdm_asyncio):
     while True:
         coro = await tasks.get()
         logger.info(
             f"Worker {asyncio.current_task().get_name()} executing task: {coro}"
         )
         await coro
+        tqdm.update()
         tasks.task_done()
 
 
@@ -57,7 +58,8 @@ async def extract_url_ctx(ctx: BrowserContext, url: str, aria2c_file):
 
 
 def blocking_run(args):
-    asyncio.run(run(args))
+    with logging_redirect_tqdm():
+        asyncio.run(run(args))
 
 
 async def run(args):
@@ -94,8 +96,9 @@ async def run(args):
 
         if MAX_WORKERS > 1:
             tasks = Queue()
+            tqdm = tqdm_asyncio(total=len(urls))
             workers = [
-                asyncio.create_task(worker_func(tasks), name=f"worker_{i+1}")
+                asyncio.create_task(worker_func(tasks, tqdm), name=f"worker_{i+1}")
                 for i in range(MAX_WORKERS)
             ]
 
@@ -107,9 +110,8 @@ async def run(args):
                 worker.cancel()
         else:
             page = await ctx.new_page()
-            with logging_redirect_tqdm():
-                for url in tqdm(urls):
-                    await extract_url_page(page, url, ARIA2C_FILE)
+            for url in tqdm_asyncio(urls):
+                await extract_url_page(page, url, ARIA2C_FILE)
 
         await ctx.tracing.stop(path="trace.zip")
         await ctx.close()
