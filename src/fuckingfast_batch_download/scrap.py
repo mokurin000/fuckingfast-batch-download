@@ -1,4 +1,4 @@
-from aiofile import async_open
+from aiofile import TextFileWrapper
 from playwright.async_api import Page, BrowserContext
 
 from fuckingfast_batch_download.log import logger
@@ -6,7 +6,9 @@ from fuckingfast_batch_download.exceptions import RateLimited, FileNotFound
 from fuckingfast_batch_download.config import TIMEOUT_PER_PAGE
 
 
-async def extract_url_page(page: Page, url: str, aria2c_file, close_page=False):
+async def extract_url_page(
+    page: Page, url: str, aria2c_file: TextFileWrapper, close_page=False
+):
     filename = url.split("#")[-1]
 
     logger.info(f"Navigating to URL: {url}")
@@ -19,7 +21,7 @@ async def extract_url_page(page: Page, url: str, aria2c_file, close_page=False):
 
     download_loc = page.locator("button.link-button")
     async with page.expect_download(timeout=TIMEOUT_PER_PAGE) as download_info:
-        logger.info("Initiating download...")
+        logger.info(f"Initiating download for {filename}...")
         await download_loc.click()
         await download_loc.click()
 
@@ -28,11 +30,10 @@ async def extract_url_page(page: Page, url: str, aria2c_file, close_page=False):
     if close_page:
         await page.close()
 
-    async with async_open(aria2c_file, "a", encoding="utf-8") as f:
-        await f.write(f"{download.url}\n    out={filename}\n    continue=true\n")
+    await aria2c_file.write(f"{download.url}\n    out={filename}\n    continue=true\n")
     logger.info(f"Download URL: {download.url}, Filename: {filename}")
 
 
-async def extract_url_ctx(ctx: BrowserContext, url: str, aria2c_file):
+async def extract_url_ctx(ctx: BrowserContext, url: str, aria2c_file: TextFileWrapper):
     page = await ctx.new_page()
     await extract_url_page(page, url, aria2c_file, close_page=True)

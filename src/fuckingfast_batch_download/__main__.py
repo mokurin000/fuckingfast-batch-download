@@ -6,6 +6,7 @@ from pathlib import Path
 from asyncio import Queue
 from collections.abc import Coroutine
 
+from aiofile import async_open
 from tqdm.asyncio import tqdm_asyncio
 from tqdm.contrib.logging import logging_redirect_tqdm
 from playwright.async_api import async_playwright, Page
@@ -79,16 +80,18 @@ async def run(args):
                 for i in range(config.MAX_WORKERS)
             ]
 
-            for url in urls:
-                await tasks.put(extract_url_ctx(ctx, url, config.ARIA2C_FILE))
-            await tasks.join()
+            async with async_open(config.ARIA2C_FILE, "a", encoding="utf-8") as f:
+                for url in urls:
+                    await tasks.put(extract_url_ctx(ctx, url, f))
+                await tasks.join()
 
             for _ in workers:
                 await tasks.put(None)
         else:
-            page = await ctx.new_page()
-            for url in tqdm_asyncio(urls):
-                await extract_url_page(page, url, config.ARIA2C_FILE)
+            async with async_open(config.ARIA2C_FILE, "a", encoding="utf-8") as f:
+                page = await ctx.new_page()
+                for url in tqdm_asyncio(urls):
+                    await extract_url_page(page, url, f)
 
         await ctx.tracing.stop(path="trace.zip")
         await ctx.close()
