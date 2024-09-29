@@ -3,6 +3,7 @@ import argparse
 import logging
 from pathlib import Path
 from asyncio import Queue
+from argparse import Namespace
 from collections.abc import Coroutine
 
 from aiofile import async_open
@@ -24,7 +25,8 @@ async def worker_func(tasks: Queue[Coroutine], tqdm: tqdm_asyncio, browser: Brow
 
     ctx = await browser.new_context(user_agent=USER_AGENT, locale="en_US")
     ctx.on("page", on_page)
-    await ctx.tracing.start(screenshots=True, snapshots=True, name="fuckingfast")
+    if config.SAVE_TRACE:
+        await ctx.tracing.start(screenshots=True, snapshots=True, name="fuckingfast")
     page = await ctx.new_page()
 
     while True:
@@ -48,20 +50,22 @@ async def worker_func(tasks: Queue[Coroutine], tqdm: tqdm_asyncio, browser: Brow
         tqdm.update()
         tasks.task_done()
     logger.info(f"Worker {worker_name} exiting...")
-    await ctx.tracing.stop(path=f"trace-{worker_name}.zip")
+    if config.SAVE_TRACE:
+        await ctx.tracing.stop(path=f"trace-{worker_name}.zip")
     await ctx.close()
 
 
-def blocking_run(args):
+def blocking_run(args: Namespace):
     with logging_redirect_tqdm():
         asyncio.run(run(args))
 
 
-async def run(args):
+async def run(args: Namespace):
     config.TIMEOUT_PER_PAGE = int(args.timeout)
     config.MAX_WORKERS = int(args.max_workers)
     config.URLS_FILE = args.urls_file
     config.ARIA2C_FILE = args.aria2c_file
+    config.SAVE_TRACE = bool(args.save_trace)
 
     with open(config.URLS_FILE, "r", encoding="utf-8") as urls:
         urls = [url for url in urls.read().split("\n") if url]
@@ -91,16 +95,18 @@ async def run(args):
         else:
             ctx = await browser.new_context(user_agent=USER_AGENT, locale="en_US")
             ctx.on("page", on_page)
-            await ctx.tracing.start(
-                screenshots=True, snapshots=True, name="fuckingfast"
-            )
+            if config.SAVE_TRACE:
+                await ctx.tracing.start(
+                    screenshots=True, snapshots=True, name="fuckingfast"
+                )
 
             async with async_open(config.ARIA2C_FILE, "a", encoding="utf-8") as f:
                 page = await ctx.new_page()
                 for url in tqdm_asyncio(urls):
                     await extract_url_page(page, url, f)
 
-            await ctx.tracing.stop(path="trace.zip")
+            if config.SAVE_TRACE:
+                await ctx.tracing.stop(path="trace.zip")
             await ctx.close()
 
         if enable_concurrent:
@@ -122,7 +128,13 @@ def main():
         "--timeout", type=int, default=5000, help="Timeout per page (ms)"
     )
     parser.add_argument(
-        "--max_workers", type=int, default=2, help="Maximum number of workers"
+        "--max-workers", type=int, default=2, help="Maximum number of workers"
+    )
+    parser.add_argument(
+        "--save-trace",
+        type=bool,
+        default=False,
+        help="Save trace files (for debugging only)",
     )
     args = parser.parse_args()
     blocking_run(args)
