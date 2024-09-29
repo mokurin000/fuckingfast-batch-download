@@ -162,7 +162,7 @@ cython_debug/
 #.idea/
 
 *.txt
-trace.zip
+trace*.zip
 
 *.rar
 *.bin

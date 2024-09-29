@@ -1,5 +1,5 @@
 from aiofile import TextFileWrapper
-from playwright.async_api import Page, BrowserContext
+from playwright.async_api import Page
 
 from fuckingfast_batch_download.log import logger
 from fuckingfast_batch_download.exceptions import RateLimited, FileNotFound
@@ -32,8 +32,3 @@ async def extract_url_page(
 
     await aria2c_file.write(f"{download.url}\n    out={filename}\n    continue=true\n")
     logger.info(f"Download URL: {download.url}, Filename: {filename}")
-
-
-async def extract_url_ctx(ctx: BrowserContext, url: str, aria2c_file: TextFileWrapper):
-    page = await ctx.new_page()
-    await extract_url_page(page, url, aria2c_file, close_page=True)

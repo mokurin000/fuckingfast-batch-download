@@ -1,7 +1,6 @@
 import asyncio
 import argparse
 import logging
-import urllib.parse
 from pathlib import Path
 from asyncio import Queue
 from collections.abc import Coroutine
@@ -9,36 +8,48 @@ from collections.abc import Coroutine
 from aiofile import async_open
 from tqdm.asyncio import tqdm_asyncio
 from tqdm.contrib.logging import logging_redirect_tqdm
-from playwright.async_api import async_playwright, Page
+from playwright.async_api import async_playwright, Browser
 
 import fuckingfast_batch_download.config as config
 from fuckingfast_batch_download.exceptions import FileNotFound, RateLimited
-from fuckingfast_batch_download.utils import consume_tasks
+from fuckingfast_batch_download.utils import consume_tasks, on_page
 from fuckingfast_batch_download.log import logger
-from fuckingfast_batch_download.scrap import extract_url_ctx, extract_url_page
+from fuckingfast_batch_download.scrap import extract_url_page
 
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 GLS/100.10.9939.100"
 
 
-async def worker_func(tasks: Queue[Coroutine], tqdm: tqdm_asyncio):
+async def worker_func(tasks: Queue[Coroutine], tqdm: tqdm_asyncio, browser: Browser):
+    worker_name = asyncio.current_task().get_name()
+
+    ctx = await browser.new_context(user_agent=USER_AGENT, locale="en_US")
+    ctx.on("page", on_page)
+    await ctx.tracing.start(screenshots=True, snapshots=True, name="fuckingfast")
+    page = await ctx.new_page()
+
     while True:
-        coro = await tasks.get()
-        if coro is None:
-            logger.info(f"Worker {asyncio.current_task().get_name()} exiting...")
+        payload = await tasks.get()
+        if payload is None:
+            tasks.task_done()
             break
 
         try:
-            await coro
+            url, outfile = payload
+            await extract_url_page(page, url, outfile, close_page=False)
         except RateLimited:
             tasks.task_done()
 
             logging.error("rate limit! exiting")
             await consume_tasks(tasks)
+            break
         except FileNotFound as e:
             logging.error(f"{e.filename} not found!")
 
         tqdm.update()
         tasks.task_done()
+    logger.info(f"Worker {worker_name} exiting...")
+    await ctx.tracing.stop(path=f"trace-{worker_name}.zip")
+    await ctx.close()
 
 
 def blocking_run(args):
@@ -55,46 +66,47 @@ async def run(args):
     with open(config.URLS_FILE, "r", encoding="utf-8") as urls:
         urls = [url for url in urls.read().split("\n") if url]
 
+    enable_concurrent = config.MAX_WORKERS > 1
     async with async_playwright() as playwright:
-
-        def on_page(page: Page):
-            url = page.url
-            parsed = urllib.parse.urlparse(url)
-
-            if parsed.hostname is None:
-                return
-            if parsed.hostname != "fuckingfast.co":
-                return page.close()
-
         logger.info("Launching browser...")
         browser = await playwright.chromium.launch(headless=False)
-        ctx = await browser.new_context(user_agent=USER_AGENT, locale="en_US")
-        ctx.on("page", on_page)
-        await ctx.tracing.start(screenshots=True, snapshots=True, name="fuckingfast")
 
-        if config.MAX_WORKERS > 1:
+        if enable_concurrent:
             tasks = Queue()
             tqdm = tqdm_asyncio(total=len(urls))
             workers = [
-                asyncio.create_task(worker_func(tasks, tqdm), name=f"worker_{i+1}")
+                asyncio.create_task(
+                    worker_func(tasks, tqdm, browser), name=f"worker_{i+1}"
+                )
                 for i in range(config.MAX_WORKERS)
             ]
 
             async with async_open(config.ARIA2C_FILE, "a", encoding="utf-8") as f:
                 for url in urls:
-                    await tasks.put(extract_url_ctx(ctx, url, f))
+                    await tasks.put((url, f))
                 await tasks.join()
 
             for _ in workers:
                 await tasks.put(None)
         else:
+            ctx = await browser.new_context(user_agent=USER_AGENT, locale="en_US")
+            ctx.on("page", on_page)
+            await ctx.tracing.start(
+                screenshots=True, snapshots=True, name="fuckingfast"
+            )
+
             async with async_open(config.ARIA2C_FILE, "a", encoding="utf-8") as f:
                 page = await ctx.new_page()
                 for url in tqdm_asyncio(urls):
                     await extract_url_page(page, url, f)
 
-        await ctx.tracing.stop(path="trace.zip")
-        await ctx.close()
+            await ctx.tracing.stop(path="trace.zip")
+            await ctx.close()
+
+        if enable_concurrent:
+            for worker in workers:
+                while not worker.done():
+                    await asyncio.sleep(0.5)
         await browser.close()
         logger.info("Browser closed.")
 
