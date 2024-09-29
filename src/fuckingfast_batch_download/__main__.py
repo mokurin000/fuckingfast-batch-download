@@ -66,6 +66,7 @@ async def run(args: Namespace):
     config.URLS_FILE = args.urls_file
     config.ARIA2C_FILE = args.aria2c_file
     config.SAVE_TRACE = bool(args.save_trace)
+    config.HEADLESS = bool(args.headless)
 
     with open(config.URLS_FILE, "r", encoding="utf-8") as urls:
         urls = [url for url in urls.read().split("\n") if url]
@@ -73,7 +74,7 @@ async def run(args: Namespace):
     enable_concurrent = config.MAX_WORKERS > 1
     async with async_playwright() as playwright:
         logger.info("Launching browser...")
-        browser = await playwright.chromium.launch(headless=False)
+        browser = await playwright.chromium.launch(headless=config.HEADLESS)
 
         if enable_concurrent:
             tasks = Queue()
@@ -135,6 +136,12 @@ def main():
         type=bool,
         default=False,
         help="Save trace files (for debugging only)",
+    )
+    parser.add_argument(
+        "--headless",
+        type=bool,
+        default=True,
+        help="Start headless chromium",
     )
     args = parser.parse_args()
     blocking_run(args)
