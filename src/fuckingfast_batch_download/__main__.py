@@ -11,7 +11,7 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 from playwright.async_api import async_playwright, Page
 
 import fuckingfast_batch_download.config as config
-from fuckingfast_batch_download.exceptions import RateLimited
+from fuckingfast_batch_download.exceptions import FileNotFound, RateLimited
 from fuckingfast_batch_download.utils import consume_tasks
 from fuckingfast_batch_download.log import logger
 from fuckingfast_batch_download.scrap import extract_url_ctx, extract_url_page
@@ -22,9 +22,10 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 async def worker_func(tasks: Queue[Coroutine], tqdm: tqdm_asyncio):
     while True:
         coro = await tasks.get()
-        logger.info(
-            f"Worker {asyncio.current_task().get_name()} executing task: {coro}"
-        )
+        if coro is None:
+            logger.info(f"Worker {asyncio.current_task().get_name()} exiting...")
+            break
+
         try:
             await coro
         except RateLimited:
@@ -32,6 +33,9 @@ async def worker_func(tasks: Queue[Coroutine], tqdm: tqdm_asyncio):
 
             logging.error("rate limit! exiting")
             await consume_tasks(tasks)
+        except FileNotFound as e:
+            logging.error(f"{e.filename} not found!")
+
         tqdm.update()
         tasks.task_done()
 
@@ -79,8 +83,8 @@ async def run(args):
                 await tasks.put(extract_url_ctx(ctx, url, config.ARIA2C_FILE))
             await tasks.join()
 
-            for worker in workers:
-                worker.cancel()
+            for _ in workers:
+                await tasks.put(None)
         else:
             page = await ctx.new_page()
             for url in tqdm_asyncio(urls):
