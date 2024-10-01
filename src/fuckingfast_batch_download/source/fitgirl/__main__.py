@@ -2,7 +2,11 @@ import asyncio
 import argparse
 
 import xdialog
-from playwright.async_api import async_playwright, BrowserContext
+from playwright.async_api import (
+    async_playwright,
+    BrowserContext,
+    Error as PlaywrightError,
+)
 
 
 async def scrap(ctx: BrowserContext, url: str):
@@ -36,7 +40,16 @@ async def scrap(ctx: BrowserContext, url: str):
 
 async def run(args):
     async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch(headless=True)
+        if not args.skip_edge:
+            try:
+                browser = await playwright.chromium.launch(
+                    headless=True, channel="msedge"
+                )
+            except PlaywrightError:
+                xdialog.warning(message="Edge was not found, fallback to Chromium")
+                browser = await playwright.chromium.launch(headless=True)
+        else:
+            browser = await playwright.chromium.launch(headless=True)
         context = await browser.new_context()
         await context.tracing.start(name="fitgirl scrap", title="fitgirl scrap")
         await scrap(ctx=context, url=args.url)
@@ -54,9 +67,10 @@ def _main():
         description="Scrap fitgirl fuckingfast links and save to a file."
     )
     parser.add_argument("url", type=str, help="The URL to scrap")
+    parser.add_argument("--skip-edge", type=bool, help="never launch msedge")
     args = parser.parse_args()
 
-    main(args.url)
+    main(args)
 
 
 if __name__ == "__main__":
