@@ -16,7 +16,7 @@ Extract direct link from `fuckingfast.co`, to semi-automate download large games
 # Install
 pipx install https://github.com/mokurin000/fuckingfast-batch-download
 # Update
-pipx upgrade feeluown --include-injected
+pipx upgrade fuckingfast-batch-download --include-injected
 ```
 
 ### Local install (for development)
