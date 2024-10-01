@@ -2,9 +2,25 @@ import urllib.parse
 from asyncio import Queue
 from collections.abc import Coroutine
 
-from playwright.async_api import Page
+from playwright.async_api import Page, Playwright, Error as PlaywrightError
 
 from fuckingfast_batch_download.log import logger
+from fuckingfast_batch_download.config import HEADLESS, SKIP_EDGE
+
+
+async def launch_browser(playwright: Playwright):
+    if not SKIP_EDGE:
+        try:
+            browser = await playwright.chromium.launch(
+                headless=HEADLESS, channel="msedge"
+            )
+        except PlaywrightError:
+            logger.warning("Edge was not found, fallback to Chromium")
+            browser = await playwright.chromium.launch(headless=HEADLESS)
+    else:
+        browser = await playwright.chromium.launch(headless=HEADLESS)
+
+    return browser
 
 
 async def consume_tasks(tasks: Queue[Coroutine], worker_name):

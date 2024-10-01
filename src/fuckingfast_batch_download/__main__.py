@@ -13,9 +13,9 @@ from playwright.async_api import async_playwright, Browser
 
 import fuckingfast_batch_download.config as config
 from fuckingfast_batch_download.exceptions import FileNotFound, RateLimited
-from fuckingfast_batch_download.utils import consume_tasks, on_page
 from fuckingfast_batch_download.log import logger
 from fuckingfast_batch_download.scrap import extract_url_page
+from fuckingfast_batch_download.utils import consume_tasks, on_page, launch_browser
 
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 GLS/100.10.9939.100"
 
@@ -60,6 +60,42 @@ def blocking_run(args: Namespace):
         asyncio.run(run(args))
 
 
+async def concurrent_start(urls: list[str], browser: Browser):
+    tasks = Queue()
+    tqdm = tqdm_asyncio(total=len(urls))
+    workers = [
+        asyncio.create_task(worker_func(tasks, tqdm, browser), name=f"worker_{i+1}")
+        for i in range(config.MAX_WORKERS)
+    ]
+
+    async with async_open(config.ARIA2C_FILE, "a", encoding="utf-8") as f:
+        for url in urls:
+            await tasks.put((url, f))
+        await tasks.join()
+
+    for _ in workers:
+        await tasks.put(None)
+    for worker in workers:
+        while not worker.done():
+            await asyncio.sleep(0.5)
+
+
+async def start(urls: list[str], browser: Browser):
+    ctx = await browser.new_context(user_agent=USER_AGENT, locale="en_US")
+    ctx.on("page", on_page)
+    if config.SAVE_TRACE:
+        await ctx.tracing.start(screenshots=True, snapshots=True, name="fuckingfast")
+
+    async with async_open(config.ARIA2C_FILE, "a", encoding="utf-8") as f:
+        page = await ctx.new_page()
+        for url in tqdm_asyncio(urls):
+            await extract_url_page(page, url, f)
+
+    if config.SAVE_TRACE:
+        await ctx.tracing.stop(path="trace.zip")
+    await ctx.close()
+
+
 async def run(args: Namespace):
     config.TIMEOUT_PER_PAGE = int(args.timeout)
     config.MAX_WORKERS = int(args.max_workers)
@@ -67,6 +103,7 @@ async def run(args: Namespace):
     config.ARIA2C_FILE = args.aria2c_file
     config.SAVE_TRACE = bool(args.save_trace)
     config.HEADLESS = bool(args.headless)
+    config.SKIP_EDGE = bool(args.skip_edge)
 
     with open(config.URLS_FILE, "r", encoding="utf-8") as urls:
         urls = [url for url in urls.read().split("\n") if url]
@@ -74,46 +111,13 @@ async def run(args: Namespace):
     enable_concurrent = config.MAX_WORKERS > 1
     async with async_playwright() as playwright:
         logger.info("Launching browser...")
-        browser = await playwright.chromium.launch(headless=config.HEADLESS)
+        browser = await launch_browser(playwright)
 
         if enable_concurrent:
-            tasks = Queue()
-            tqdm = tqdm_asyncio(total=len(urls))
-            workers = [
-                asyncio.create_task(
-                    worker_func(tasks, tqdm, browser), name=f"worker_{i+1}"
-                )
-                for i in range(config.MAX_WORKERS)
-            ]
-
-            async with async_open(config.ARIA2C_FILE, "a", encoding="utf-8") as f:
-                for url in urls:
-                    await tasks.put((url, f))
-                await tasks.join()
-
-            for _ in workers:
-                await tasks.put(None)
+            await concurrent_start(urls=urls, browser=browser)
         else:
-            ctx = await browser.new_context(user_agent=USER_AGENT, locale="en_US")
-            ctx.on("page", on_page)
-            if config.SAVE_TRACE:
-                await ctx.tracing.start(
-                    screenshots=True, snapshots=True, name="fuckingfast"
-                )
+            await start(urls=urls, browser=browser)
 
-            async with async_open(config.ARIA2C_FILE, "a", encoding="utf-8") as f:
-                page = await ctx.new_page()
-                for url in tqdm_asyncio(urls):
-                    await extract_url_page(page, url, f)
-
-            if config.SAVE_TRACE:
-                await ctx.tracing.stop(path="trace.zip")
-            await ctx.close()
-
-        if enable_concurrent:
-            for worker in workers:
-                while not worker.done():
-                    await asyncio.sleep(0.5)
         await browser.close()
         logger.info("Browser closed.")
 
@@ -141,7 +145,13 @@ def main():
         "--headless",
         type=bool,
         default=True,
-        help="Start headless chromium",
+        help="Start headless browser",
+    )
+    parser.add_argument(
+        "--skip-edge",
+        type=bool,
+        default=False,
+        help="Don't use Edge",
     )
     args = parser.parse_args()
     blocking_run(args)
