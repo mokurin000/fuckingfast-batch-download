@@ -12,10 +12,10 @@ async def scrap(ctx: BrowserContext, url: str):
     links_loc = page.get_by_text("Filehoster: FuckingFast")
     links = await links_loc.all()
     if not links:
-        xdialog.error("ERROR: fuckingfast source not found!")
+        xdialog.error(message="ERROR: fuckingfast source not found!")
         return
     if len(links) > 1:
-        xdialog.error("ERROR: please paste url of single game!")
+        xdialog.error(message="ERROR: please paste url of single game!")
         return
 
     jump = links.pop()
