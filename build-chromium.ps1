@@ -1,6 +1,6 @@
 $project = "fuckingfast_batch_download"
-micromamba create -n $project "python<3.12"
-micromamba activate $project
+micromamba create -n $project-chromium "python<3.12"
+micromamba activate $project-chromium
 
 pip install -e .
 pip install pyinstaller
