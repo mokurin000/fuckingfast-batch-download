@@ -74,14 +74,17 @@ dependencies = [
     { name = "cli2gui" },
     { name = "playwright" },
     { name = "tqdm" },
+    { name = "xdialog" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "aiofile", specifier = ">=3.8.8" },
     { name = "cli2gui", specifier = ">=2024.1" },
+    { name = "fuckingfast-batch-download", virtual = "." },
     { name = "playwright", specifier = ">=1.47.0" },
     { name = "tqdm", specifier = ">=4.66.5" },
+    { name = "xdialog", specifier = ">=1.2.0.1" },
 ]
 
 [[package]]
@@ -244,4 +247,13 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/df/db/f35a00659bc03fec321ba8bce9420de607a1d37f8342eee1863174c69557/typing_extensions-4.12.2.tar.gz", hash = "sha256:1a7ead55c7e559dd4dee8856e3a88b41225abfe1ce8df57b7c13915fe121ffb8", size = 85321 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/26/9f/ad63fc0248c5379346306f8668cda6e2e2e9c95e01216d2b8ffd9ff037d0/typing_extensions-4.12.2-py3-none-any.whl", hash = "sha256:04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d", size = 37438 },
+]
+
+[[package]]
+name = "xdialog"
+version = "1.2.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b9/0a/d6833588d20e235df2bad4adde8f652836587dc14c33dcf66367dcdf336c/xdialog-1.2.0.1.tar.gz", hash = "sha256:d3fce86d0c674d75b9793275a405ee3a37305f97d9b610b5e454dd0a64e146d3", size = 11134 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/45/40/1219f32df9e065f186985da09548e69ff888e11d1f03ef451a728f2cc187/xdialog-1.2.0.1-py3-none-any.whl", hash = "sha256:05c019ac13ad3eae01bc1627fa21f37c1265720080355c6ff05a13fb73867192", size = 12588 },
 ]
