@@ -102,7 +102,7 @@ async def run(args: Namespace):
     config.URLS_FILE = args.urls_file
     config.ARIA2C_FILE = args.aria2c_file
     config.SAVE_TRACE = bool(args.save_trace)
-    config.HEADLESS = bool(args.headless)
+    config.HEADLESS = not bool(args.no_headless)
     config.SKIP_EDGE = bool(args.skip_edge)
 
     with open(config.URLS_FILE, "r", encoding="utf-8") as urls:
@@ -137,20 +137,17 @@ def main():
     )
     parser.add_argument(
         "--save-trace",
-        type=bool,
-        default=False,
+        action="store_true",
         help="Save trace files (for debugging only)",
     )
     parser.add_argument(
-        "--headless",
-        type=bool,
-        default=True,
+        "--no-headless",
+        action="store_true",
         help="Start headless browser",
     )
     parser.add_argument(
         "--skip-edge",
-        type=bool,
-        default=False,
+        action="store_true",
         help="Don't use Edge",
     )
     args = parser.parse_args()

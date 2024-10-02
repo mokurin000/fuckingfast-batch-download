@@ -70,7 +70,7 @@ def _main():
         description="Scrap fitgirl fuckingfast links and save to a file."
     )
     parser.add_argument("url", type=str, help="The URL to scrap")
-    parser.add_argument("--skip-edge", type=bool, help="never launch msedge")
+    parser.add_argument("--skip-edge", help="never launch msedge", action="store_true")
     args = parser.parse_args()
 
     main(args)
