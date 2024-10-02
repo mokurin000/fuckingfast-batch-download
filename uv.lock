@@ -29,7 +29,7 @@ wheels = [
 [[package]]
 name = "cli2gui"
 version = "2024.1"
-source = { git = "https://github.com/mokurin000/Cli2Gui.git?branch=support-fpg#fd8a822ccdae1eb15baf5c5b0e52b94f1eed4be0" }
+source = { git = "https://github.com/mokurin000/Cli2Gui.git?rev=support-fpg#9ddff4fae93a7e917940b248a2da82fc4a30f9ff" }
 dependencies = [
     { name = "dearpygui" },
     { name = "getostheme" },
@@ -86,7 +86,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "aiofile", specifier = ">=3.8.8" },
-    { name = "cli2gui", git = "https://github.com/mokurin000/Cli2Gui.git?branch=support-fpg" },
+    { name = "cli2gui", git = "https://github.com/mokurin000/Cli2Gui.git?rev=support-fpg" },
     { name = "freesimplegui", specifier = ">=5.1.1" },
     { name = "playwright", specifier = ">=1.47.0" },
     { name = "tqdm", specifier = ">=4.66.5" },

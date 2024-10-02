@@ -13,6 +13,3 @@ dependencies = [
     "xdialog>=1.2.0.1",
 ]
 license = { text = "MIT" }
-
-[tool.uv.sources]
-cli2gui = { git = "https://github.com/mokurin000/Cli2Gui.git", branch = "support-fpg" }
