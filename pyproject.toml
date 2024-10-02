@@ -5,9 +5,14 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
 dependencies = [
-    "cli2gui>=2024.1",
+    "aiofile>=3.8.8",
+    "cli2gui @ git+https://github.com/mokurin000/Cli2Gui.git@support-fpg",
+    "freesimplegui>=5.1.1",
     "playwright>=1.47.0",
     "tqdm>=4.66.5",
     "xdialog>=1.2.0.1",
 ]
 license = { text = "MIT" }
+
+[tool.uv.sources]
+cli2gui = { git = "https://github.com/mokurin000/Cli2Gui.git", branch = "support-fpg" }

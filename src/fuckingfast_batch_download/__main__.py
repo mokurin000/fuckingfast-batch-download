@@ -4,7 +4,9 @@ import logging
 from asyncio import Queue
 from argparse import Namespace
 from collections.abc import Coroutine
+from pathlib import Path
 
+from aiofile import async_open
 from tqdm.asyncio import tqdm_asyncio
 from tqdm.contrib.logging import logging_redirect_tqdm
 from playwright.async_api import async_playwright, Browser
@@ -66,9 +68,10 @@ async def concurrent_start(urls: list[str], browser: Browser):
         for i in range(config.MAX_WORKERS)
     ]
 
-    for url in urls:
-        await tasks.put((url, config.ARIA2_OUTPUT))
-    await tasks.join()
+    async with async_open(config.ARIA2_OUTPUT, "a", encoding="utf-8") as f:
+        for url in urls:
+            await tasks.put((url, f))
+        await tasks.join()
 
     for _ in workers:
         await tasks.put(None)
@@ -84,8 +87,9 @@ async def start(urls: list[str], browser: Browser):
         await ctx.tracing.start(screenshots=True, snapshots=True, name="fuckingfast")
 
     page = await ctx.new_page()
-    for url in tqdm_asyncio(urls):
-        await extract_url_page(page, url, config.ARIA2_OUTPUT)
+    with async_open(config.ARIA2_OUTPUT, "a", encoding="utf-8") as f:
+        for url in tqdm_asyncio(urls):
+            await extract_url_page(page, url, aria2c_file=f)
 
     if config.SAVE_TRACE:
         await ctx.tracing.stop(path="trace.zip")
@@ -128,7 +132,7 @@ def main():
     parser.add_argument(
         "aria2c_file",
         help="Output file for aria2c download links",
-        type=argparse.FileType("w", encoding="utf-8"),
+        type=Path,
     )
     parser.add_argument(
         "--timeout", type=int, default=5000, help="Timeout per page (ms)"
