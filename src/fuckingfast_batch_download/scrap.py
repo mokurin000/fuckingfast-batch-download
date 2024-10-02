@@ -1,4 +1,5 @@
-from aiofile import TextFileWrapper
+from io import TextIOWrapper
+
 from playwright.async_api import Page
 
 from fuckingfast_batch_download.log import logger
@@ -7,7 +8,7 @@ from fuckingfast_batch_download.config import TIMEOUT_PER_PAGE
 
 
 async def extract_url_page(
-    page: Page, url: str, aria2c_file: TextFileWrapper, close_page=False
+    page: Page, url: str, aria2c_file: TextIOWrapper, close_page=False
 ):
     filename = url.split("#")[-1]
 
@@ -30,5 +31,5 @@ async def extract_url_page(
     if close_page:
         await page.close()
 
-    await aria2c_file.write(f"{download.url}\n    out={filename}\n    continue=true\n")
+    aria2c_file.write(f"{download.url}\n    out={filename}\n    continue=true\n")
     logger.info(f"Download URL: {download.url}, Filename: {filename}")

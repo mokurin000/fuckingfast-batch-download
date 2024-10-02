@@ -1,12 +1,10 @@
 import asyncio
 import argparse
 import logging
-from pathlib import Path
 from asyncio import Queue
 from argparse import Namespace
 from collections.abc import Coroutine
 
-from aiofile import async_open
 from tqdm.asyncio import tqdm_asyncio
 from tqdm.contrib.logging import logging_redirect_tqdm
 from playwright.async_api import async_playwright, Browser
@@ -68,10 +66,9 @@ async def concurrent_start(urls: list[str], browser: Browser):
         for i in range(config.MAX_WORKERS)
     ]
 
-    async with async_open(config.ARIA2C_FILE, "a", encoding="utf-8") as f:
-        for url in urls:
-            await tasks.put((url, f))
-        await tasks.join()
+    for url in urls:
+        await tasks.put((url, config.ARIA2_OUTPUT))
+    await tasks.join()
 
     for _ in workers:
         await tasks.put(None)
@@ -86,10 +83,9 @@ async def start(urls: list[str], browser: Browser):
     if config.SAVE_TRACE:
         await ctx.tracing.start(screenshots=True, snapshots=True, name="fuckingfast")
 
-    async with async_open(config.ARIA2C_FILE, "a", encoding="utf-8") as f:
-        page = await ctx.new_page()
-        for url in tqdm_asyncio(urls):
-            await extract_url_page(page, url, f)
+    page = await ctx.new_page()
+    for url in tqdm_asyncio(urls):
+        await extract_url_page(page, url, config.ARIA2_OUTPUT)
 
     if config.SAVE_TRACE:
         await ctx.tracing.stop(path="trace.zip")
@@ -99,14 +95,13 @@ async def start(urls: list[str], browser: Browser):
 async def run(args: Namespace):
     config.TIMEOUT_PER_PAGE = int(args.timeout)
     config.MAX_WORKERS = int(args.max_workers)
-    config.URLS_FILE = args.urls_file
-    config.ARIA2C_FILE = args.aria2c_file
+    config.URLS_INPUT = args.urls_file
+    config.ARIA2_OUTPUT = args.aria2c_file
     config.SAVE_TRACE = bool(args.save_trace)
     config.HEADLESS = not bool(args.no_headless)
     config.SKIP_EDGE = bool(args.skip_edge)
 
-    with open(config.URLS_FILE, "r", encoding="utf-8") as urls:
-        urls = [url for url in urls.read().split("\n") if url]
+    urls = [url for url in config.URLS_INPUT.read().split("\n") if url]
 
     enable_concurrent = config.MAX_WORKERS > 1
     async with async_playwright() as playwright:
@@ -125,11 +120,15 @@ async def run(args: Namespace):
 # The main function can be used as a CLI entrypoint
 def main():
     parser = argparse.ArgumentParser(description="Web scraper with aria2c output")
-    parser.add_argument("urls_file", type=Path, help="Input file containing URLs")
+    parser.add_argument(
+        "urls_file",
+        help="Input file containing URLs",
+        type=argparse.FileType("r"),
+    )
     parser.add_argument(
         "aria2c_file",
         help="Output file for aria2c download links",
-        type=Path,
+        type=argparse.FileType("w"),
     )
     parser.add_argument(
         "--timeout", type=int, default=5000, help="Timeout per page (ms)"
