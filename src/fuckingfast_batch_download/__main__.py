@@ -127,7 +127,9 @@ def main():
     parser = argparse.ArgumentParser(description="Web scraper with aria2c output")
     parser.add_argument("urls_file", type=Path, help="Input file containing URLs")
     parser.add_argument(
-        "aria2c_file", type=Path, help="Output file for aria2c download links"
+        "aria2c_file",
+        help="Output file for aria2c download links",
+        type=Path,
     )
     parser.add_argument(
         "--timeout", type=int, default=5000, help="Timeout per page (ms)"
