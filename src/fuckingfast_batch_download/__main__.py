@@ -123,12 +123,12 @@ def main():
     parser.add_argument(
         "urls_file",
         help="Input file containing URLs",
-        type=argparse.FileType("r"),
+        type=argparse.FileType("r", encoding="utf-8"),
     )
     parser.add_argument(
         "aria2c_file",
         help="Output file for aria2c download links",
-        type=argparse.FileType("w"),
+        type=argparse.FileType("w", encoding="utf-8"),
     )
     parser.add_argument(
         "--timeout", type=int, default=5000, help="Timeout per page (ms)"
