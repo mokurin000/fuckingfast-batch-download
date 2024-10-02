@@ -52,7 +52,10 @@ async def run(args):
             browser = await playwright.chromium.launch(headless=True)
         context = await browser.new_context()
         await context.tracing.start(name="fitgirl scrap", title="fitgirl scrap")
-        await scrap(ctx=context, url=args.url)
+        try:
+            await scrap(ctx=context, url=args.url)
+        except PlaywrightError as e:
+            xdialog.error(title="Scrap error", message=f"{e}")
         await context.tracing.stop(path="trace-fg.zip")
         await context.close()
         await browser.close()
