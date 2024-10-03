@@ -23,5 +23,3 @@ Remove-Item -Recurse -Force dist\scrap-gui-chromium
 
 # Optional, comment this to debug pyinstaller spec.
 Remove-Item *.spec
-# Clean build cache directory
-Remove-Item -Recurse -Force build\
