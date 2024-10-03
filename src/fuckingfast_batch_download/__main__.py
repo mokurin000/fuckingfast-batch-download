@@ -6,7 +6,7 @@ from argparse import Namespace
 from collections.abc import Coroutine
 from pathlib import Path
 
-from aiofile import async_open
+import aiofiles
 from tqdm.asyncio import tqdm_asyncio
 from tqdm.contrib.logging import logging_redirect_tqdm
 from playwright.async_api import async_playwright, Browser
@@ -68,7 +68,7 @@ async def concurrent_start(urls: list[str], browser: Browser):
         for i in range(config.MAX_WORKERS)
     ]
 
-    async with async_open(config.ARIA2_OUTPUT, "a", encoding="utf-8") as f:
+    async with aiofiles.open(config.ARIA2_OUTPUT, mode="a", encoding="utf-8") as f:
         for url in urls:
             await tasks.put((url, f))
         await tasks.join()
@@ -87,7 +87,7 @@ async def start(urls: list[str], browser: Browser):
         await ctx.tracing.start(screenshots=True, snapshots=True, name="fuckingfast")
 
     page = await ctx.new_page()
-    with async_open(config.ARIA2_OUTPUT, "a", encoding="utf-8") as f:
+    async with aiofiles.open(config.ARIA2_OUTPUT, "a", encoding="utf-8") as f:
         for url in tqdm_asyncio(urls):
             await extract_url_page(page, url, aria2c_file=f)
 

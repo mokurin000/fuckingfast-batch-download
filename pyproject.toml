@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
 dependencies = [
-    "aiofile>=3.8.8",
+    "aiofiles>=24.1.0",
     "cli2gui @ git+https://github.com/mokurin000/Cli2Gui.git@support-fpg",
     "freesimplegui>=5.1.1",
     "playwright>=1.47.0",
@@ -13,3 +13,8 @@ dependencies = [
     "xdialog>=1.2.0.1",
 ]
 license = { text = "MIT" }
+
+[tool.uv]
+dev-dependencies = [
+    "types-aiofiles>=24.1.0.20240626",
+]

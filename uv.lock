@@ -2,28 +2,12 @@ version = 1
 requires-python = ">=3.11, <3.13"
 
 [[package]]
-name = "aiofile"
-version = "3.8.8"
+name = "aiofiles"
+version = "24.1.0"
 source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "caio" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/41/6d/e03ef9694346a55da965538f3e28461bd9fc71e21f997269d03b3cfc8755/aiofile-3.8.8.tar.gz", hash = "sha256:41f3dc40bd730459d58610476e82e5efb2f84ae6e9fa088a9545385d838b8a43", size = 19456 }
+sdist = { url = "https://files.pythonhosted.org/packages/0b/03/a88171e277e8caa88a4c77808c20ebb04ba74cc4681bf1e9416c862de237/aiofiles-24.1.0.tar.gz", hash = "sha256:22a075c9e5a3810f0c2e48f3008c94d68c65d763b9b03857924c99e57355166c", size = 30247 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/76/ea/b6aae3275bb0991c43fff401e7b8db198047b6f692e8954520ec7aed3652/aiofile-3.8.8-py3-none-any.whl", hash = "sha256:41e8845cce055779cd77713d949a339deb012eab605b857765e8f8e52a5ed811", size = 19866 },
-]
-
-[[package]]
-name = "caio"
-version = "0.9.17"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/88/cf/59b868909a85ad9eca985ad5bbeb3c0a8cd435e50ae12def770d16911753/caio-0.9.17.tar.gz", hash = "sha256:8f30511526814d961aeef389ea6885273abe6c655f1e08abbadb95d12fdd9b4f", size = 25001 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/52/44/a79c7004a9562a176d78437816c736c34ab9fb6233a4b8164eb25628a09c/caio-0.9.17-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:079730a353bbde03796fab681e969472eace09ffbe5000e584868a7fe389ba6f", size = 37842 },
-    { url = "https://files.pythonhosted.org/packages/57/e2/1d04e506a5fd735856f0bb95b4d03b800947bd43c98193ee57d37070a51e/caio-0.9.17-cp311-cp311-manylinux_2_12_x86_64.manylinux2010_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:549caa51b475877fe32856a26fe937366ae7a1c23a9727005b441db9abb12bcc", size = 79985 },
-    { url = "https://files.pythonhosted.org/packages/c3/b8/37dcee4bc4fae1701a86373a297bbca797f6b7bfe5f85993a11049649c63/caio-0.9.17-cp312-cp312-macosx_10_9_universal2.whl", hash = "sha256:0ddb253b145a53ecca76381677ce465bc5efeaecb6aaf493fac43ae79659f0fb", size = 37909 },
-    { url = "https://files.pythonhosted.org/packages/80/f5/5e993120daeb4ec084f5f84c118bbd48b65379f63ed56919bf224e0eab42/caio-0.9.17-cp312-cp312-manylinux_2_12_x86_64.manylinux2010_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b3e320b0ea371c810359934f8e8fe81777c493cc5fb4d41de44277cbe7336e74", size = 81709 },
-    { url = "https://files.pythonhosted.org/packages/58/72/3f4895adb1d23b0ac1d8afc748405a2ad3c77d8d0f23b05a64ff583c11e5/caio-0.9.17-py3-none-any.whl", hash = "sha256:c55d4dc6b3a36f93237ecd6360e1c131c3808bc47d4191a130148a99b80bb311", size = 19062 },
+    { url = "https://files.pythonhosted.org/packages/a5/45/30bb92d442636f570cb5651bc661f52b610e2eec3f891a5dc3a4c3667db0/aiofiles-24.1.0-py3-none-any.whl", hash = "sha256:b4ec55f4195e3eb5d7abd1bf7e061763e864dd4954231fb8539a0ef8bb8260e5", size = 15896 },
 ]
 
 [[package]]
@@ -75,7 +59,7 @@ name = "fuckingfast-batch-download"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
-    { name = "aiofile" },
+    { name = "aiofiles" },
     { name = "cli2gui" },
     { name = "freesimplegui" },
     { name = "playwright" },
@@ -83,15 +67,23 @@ dependencies = [
     { name = "xdialog" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "types-aiofiles" },
+]
+
 [package.metadata]
 requires-dist = [
-    { name = "aiofile", specifier = ">=3.8.8" },
+    { name = "aiofiles", specifier = ">=24.1.0" },
     { name = "cli2gui", git = "https://github.com/mokurin000/Cli2Gui.git?rev=support-fpg" },
     { name = "freesimplegui", specifier = ">=5.1.1" },
     { name = "playwright", specifier = ">=1.47.0" },
     { name = "tqdm", specifier = ">=4.66.5" },
     { name = "xdialog", specifier = ">=1.2.0.1" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "types-aiofiles", specifier = ">=24.1.0.20240626" }]
 
 [[package]]
 name = "getostheme"
@@ -244,6 +236,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/58/83/6ba9844a41128c62e810fddddd72473201f3eacde02046066142a2d96cc5/tqdm-4.66.5.tar.gz", hash = "sha256:e1020aef2e5096702d8a025ac7d16b1577279c9d63f8375b63083e9a5f0fcbad", size = 169504 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/48/5d/acf5905c36149bbaec41ccf7f2b68814647347b72075ac0b1fe3022fdc73/tqdm-4.66.5-py3-none-any.whl", hash = "sha256:90279a3770753eafc9194a0364852159802111925aa30eb3f9d85b0e805ac7cd", size = 78351 },
+]
+
+[[package]]
+name = "types-aiofiles"
+version = "24.1.0.20240626"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/13/e9/013940b017c313c2e15c64017268fdb0c25e0638621fb8a5d9ebe00fb0f4/types-aiofiles-24.1.0.20240626.tar.gz", hash = "sha256:48604663e24bc2d5038eac05ccc33e75799b0779e93e13d6a8f711ddc306ac08", size = 9357 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c3/ad/c4b3275d21c5be79487c4f6ed7cd13336997746fe099236cb29256a44a90/types_aiofiles-24.1.0.20240626-py3-none-any.whl", hash = "sha256:7939eca4a8b4f9c6491b6e8ef160caee9a21d32e18534a57d5ed90aee47c66b4", size = 9389 },
 ]
 
 [[package]]
