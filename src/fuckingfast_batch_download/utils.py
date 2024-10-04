@@ -5,10 +5,7 @@ from collections.abc import Coroutine
 from playwright.async_api import Page, Playwright, Error as PlaywrightError
 
 from fuckingfast_batch_download.log import logger
-from fuckingfast_batch_download.config import SKIP_EDGE
-
-
-HEADLESS = True
+from fuckingfast_batch_download.config import HEADLESS, SKIP_EDGE
 
 
 async def launch_browser(playwright: Playwright):

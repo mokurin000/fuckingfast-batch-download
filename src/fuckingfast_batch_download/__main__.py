@@ -102,6 +102,7 @@ async def run(args: Namespace):
     config.URLS_INPUT = args.urls_file
     config.ARIA2_OUTPUT = args.aria2c_file
     config.SAVE_TRACE = bool(args.save_trace)
+    config.HEADLESS = not bool(args.no_headless)
     config.SKIP_EDGE = bool(args.skip_edge)
 
     urls = [url for url in config.URLS_INPUT.read().split("\n") if url]
@@ -138,6 +139,11 @@ def main():
     )
     parser.add_argument(
         "--max-workers", type=int, default=2, help="Maximum number of workers"
+    )
+    parser.add_argument(
+        "--no-headless",
+        action="store_true",
+        help="Don't start browser as headless",
     )
     parser.add_argument(
         "--save-trace",
