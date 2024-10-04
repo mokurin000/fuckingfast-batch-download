@@ -12,13 +12,17 @@ wheels = [
 
 [[package]]
 name = "cli2gui"
-version = "2024.1"
-source = { git = "https://github.com/mokurin000/Cli2Gui.git?rev=support-fpg#9ddff4fae93a7e917940b248a2da82fc4a30f9ff" }
+version = "2024.2"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "dearpygui" },
     { name = "getostheme" },
     { name = "pillow" },
     { name = "pyyaml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f6/25/3d2ca3239f51cf65e16ac12f5cc52ed0a4eded3e9daf2165cf3aab4ecb15/cli2gui-2024.2.tar.gz", hash = "sha256:34ed775e563dde95907f14818b4647a04d5db77a33963dedddaa5e1da31d84aa", size = 162360 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f4/c9/2ed480369c5aabb5b969433f652da4e8626c0d3265dbddac0702aef26de3/cli2gui-2024.2-py3-none-any.whl", hash = "sha256:4ad649133e9287db559e81ec07c96f7481780e611e5b4b142b8e8621d37b0662", size = 166893 },
 ]
 
 [[package]]
@@ -75,7 +79,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "aiofiles", specifier = ">=24.1.0" },
-    { name = "cli2gui", git = "https://github.com/mokurin000/Cli2Gui.git?rev=support-fpg" },
+    { name = "cli2gui", specifier = ">=2024.2" },
     { name = "freesimplegui", specifier = ">=5.1.1" },
     { name = "playwright", specifier = ">=1.47.0" },
     { name = "tqdm", specifier = ">=4.66.5" },
