@@ -1,6 +1,5 @@
 import asyncio
 import argparse
-import logging
 from asyncio import Queue
 from argparse import Namespace
 from collections.abc import Coroutine
@@ -41,11 +40,11 @@ async def worker_func(tasks: Queue[Coroutine], tqdm: tqdm_asyncio, browser: Brow
         except RateLimited:
             tasks.task_done()
 
-            logging.error("rate limit! exiting")
+            logger.error("rate limit! exiting")
             await consume_tasks(tasks)
             break
         except FileNotFound as e:
-            logging.error(f"{e.filename} not found!")
+            logger.warning(f"{e.filename} not found!")
 
         tqdm.update()
         tasks.task_done()
@@ -89,7 +88,13 @@ async def start(urls: list[str], browser: Browser):
     page = await ctx.new_page()
     async with aiofiles.open(config.ARIA2_OUTPUT, "a", encoding="utf-8") as f:
         for url in tqdm_asyncio(urls):
-            await extract_url_page(page, url, aria2c_file=f)
+            try:
+                await extract_url_page(page, url, aria2c_file=f)
+            except RateLimited:
+                logger.error("rate limit! exiting")
+                break
+            except FileNotFound as e:
+                logger.warning(f"{e.filename} not found!")
 
     if config.SAVE_TRACE:
         await ctx.tracing.stop(path="trace.zip")
