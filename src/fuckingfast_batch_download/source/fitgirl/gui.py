@@ -15,7 +15,7 @@ def wrapper(args):
         xdialog.info(message="Task already running")
         return
     THREAD = Thread(target=main, args=(args,))
-    THREAD.start()
+    THREAD.run()
 
 
 deco = cli2gui.Cli2Gui(

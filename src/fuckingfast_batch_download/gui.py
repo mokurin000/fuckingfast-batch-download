@@ -15,7 +15,7 @@ def wrapper(args):
         xdialog.info(message="Task already running")
         return
     THREAD = Thread(target=blocking_run, args=(args,))
-    THREAD.start()
+    THREAD.run()
 
 
 # Set up Cli2Gui
