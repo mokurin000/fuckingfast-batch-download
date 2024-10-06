@@ -38,13 +38,15 @@ async def worker_func(tasks: Queue[Coroutine], tqdm: tqdm_asyncio, browser: Brow
             url, outfile = payload
             await extract_url_page(page, url, outfile, close_page=False)
         except RateLimited:
-            tasks.task_done()
-
             logger.error("rate limit! exiting")
+
+            tasks.task_done()
             await consume_tasks(tasks)
             break
         except FileNotFound as e:
             logger.warning(f"{e.filename} not found!")
+        except TimeoutError as e:
+            logger.warning(f"Timeout: {e.__cause__}")
 
         tqdm.update()
         tasks.task_done()
