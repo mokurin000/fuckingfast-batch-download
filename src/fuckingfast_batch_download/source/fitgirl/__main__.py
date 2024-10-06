@@ -9,24 +9,27 @@ from playwright.async_api import (
     Error as PlaywrightError,
 )
 
-
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 
 async def scrap(ctx: BrowserContext, url: str, timeout: float):
     page = await ctx.new_page()
-    logging.info(f"Navigating to {url}")
+    logger.info(f"Navigating to {url}")
     await page.goto(url, wait_until="domcontentloaded", timeout=timeout)
 
     links_loc = page.get_by_text("Filehoster: FuckingFast")
     links = await links_loc.all()
     if not links:
         message = "ERROR: fuckingfast source not found!"
-        logging.error(message)
+        logger.error(message)
         xdialog.error(message=message)
         return
     if len(links) > 1:
         message = "ERROR: please paste url of single game!"
-        logging.error(message)
+        logger.error(message)
         xdialog.error(message=message)
         return
 
@@ -43,7 +46,7 @@ async def scrap(ctx: BrowserContext, url: str, timeout: float):
 
     if not output:
         message = "User cancellation"
-        logging.info(message)
+        logger.info(message)
         xdialog.info(message=message)
         return
     with open(output, "w", encoding="utf-8") as f:
