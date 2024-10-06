@@ -54,9 +54,17 @@ async def worker_func(tasks: Queue[Coroutine], tqdm: tqdm_asyncio, browser: Brow
     await ctx.close()
 
 
-def blocking_run(args: Namespace):
+def run_with_args(args: Namespace):
+    config.TIMEOUT_PER_PAGE = int(args.timeout)
+    config.MAX_WORKERS = int(args.max_workers)
+    config.URLS_INPUT = args.urls_file
+    config.ARIA2_OUTPUT = args.aria2c_file
+    config.SAVE_TRACE = bool(args.save_trace)
+    config.HEADLESS = not bool(args.no_headless)
+    config.SKIP_EDGE = bool(args.skip_edge)
+
     with logging_redirect_tqdm():
-        asyncio.run(run(args))
+        asyncio.run(run())
 
 
 async def concurrent_start(urls: list[str], browser: Browser):
@@ -101,15 +109,7 @@ async def start(urls: list[str], browser: Browser):
     await ctx.close()
 
 
-async def run(args: Namespace):
-    config.TIMEOUT_PER_PAGE = int(args.timeout)
-    config.MAX_WORKERS = int(args.max_workers)
-    config.URLS_INPUT = args.urls_file
-    config.ARIA2_OUTPUT = args.aria2c_file
-    config.SAVE_TRACE = bool(args.save_trace)
-    config.HEADLESS = not bool(args.no_headless)
-    config.SKIP_EDGE = bool(args.skip_edge)
-
+async def run():
     urls = [url for url in config.URLS_INPUT.read().split("\n") if url]
 
     enable_concurrent = config.MAX_WORKERS > 1
@@ -161,7 +161,7 @@ def main():
         help="Don't use Edge",
     )
     args = parser.parse_args()
-    blocking_run(args)
+    run_with_args(args)
 
 
 if __name__ == "__main__":

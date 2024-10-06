@@ -1,9 +1,9 @@
 from playwright.async_api import Page
 
 from aiofiles.threadpool.text import AsyncTextIOWrapper
+from fuckingfast_batch_download import config
 from fuckingfast_batch_download.log import logger
 from fuckingfast_batch_download.exceptions import RateLimited, FileNotFound
-from fuckingfast_batch_download.config import TIMEOUT_PER_PAGE
 
 
 async def extract_url_page(
@@ -12,7 +12,7 @@ async def extract_url_page(
     filename = url.split("#")[-1]
 
     logger.info(f"Navigating to URL: {url}")
-    await page.goto(url)
+    await page.goto(url, wait_until='domcontentloaded')
 
     if "rate limit" in await page.content():
         raise RateLimited()
@@ -20,7 +20,7 @@ async def extract_url_page(
         raise FileNotFound(filename=filename)
 
     download_loc = page.locator("button.link-button")
-    async with page.expect_download(timeout=TIMEOUT_PER_PAGE) as download_info:
+    async with page.expect_download(timeout=config.TIMEOUT_PER_PAGE) as download_info:
         logger.info(f"Initiating download for {filename}...")
         await download_loc.click()
         await download_loc.click()

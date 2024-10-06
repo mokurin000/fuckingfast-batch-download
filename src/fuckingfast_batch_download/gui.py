@@ -3,7 +3,7 @@ from threading import Thread
 import xdialog
 from cli2gui import Cli2Gui
 
-from fuckingfast_batch_download.__main__ import blocking_run, main
+from fuckingfast_batch_download.__main__ import run_with_args, main
 
 THREAD: Thread = None
 
@@ -14,7 +14,7 @@ def wrapper(args):
     if THREAD is not None and THREAD.is_alive():
         xdialog.info(message="Task already running")
         return
-    THREAD = Thread(target=blocking_run, args=(args,))
+    THREAD = Thread(target=run_with_args, args=(args,))
     THREAD.start()
 
 
