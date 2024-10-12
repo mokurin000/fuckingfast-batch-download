@@ -1,4 +1,5 @@
 import urllib.parse
+from pathlib import Path
 from asyncio import Queue
 from collections.abc import Coroutine
 
@@ -43,3 +44,17 @@ def on_page(page: Page):
         return
     if parsed.hostname != "fuckingfast.co":
         return page.close()
+
+
+def export_to_file(results: list[tuple[str, str]], output: Path | str):
+    def pair_to_str(pair: tuple[str, str]):
+        uri = pair[0]
+        filename = pair[1]
+        indent = " " * 4
+        return f"{uri}\n{indent}out={filename}\n{indent}continue=true"
+
+    with open(output, "a", encoding="utf-8") as out:
+        out.write(
+            "\n".join(map(pair_to_str, sorted(results, key=lambda pair: pair[1])))
+            + "\n"
+        )

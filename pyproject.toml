@@ -5,7 +5,6 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
 dependencies = [
-    "aiofiles>=24.1.0",
     "cli2gui>=2024.2",
     "freesimplegui>=5.1.1",
     "playwright>=1.47.0",
@@ -15,4 +14,4 @@ dependencies = [
 license = { text = "MIT" }
 
 [tool.uv]
-dev-dependencies = ["types-aiofiles>=24.1.0.20240626"]
+dev-dependencies = []

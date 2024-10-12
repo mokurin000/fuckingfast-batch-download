@@ -1,18 +1,18 @@
 from playwright.async_api import Page
 
-from aiofiles.threadpool.text import AsyncTextIOWrapper
 from fuckingfast_batch_download import config
 from fuckingfast_batch_download.log import logger
 from fuckingfast_batch_download.exceptions import RateLimited, FileNotFound
 
 
-async def extract_url_page(
-    page: Page, url: str, aria2c_file: AsyncTextIOWrapper, close_page=False
-):
+async def extract_url_page(page: Page, url: str, close_page=False):
+    """
+    returns: tuple[uri, filename]
+    """
     filename = url.split("#")[-1]
 
     logger.info(f"Navigating to URL: {url}")
-    await page.goto(url, wait_until='domcontentloaded')
+    await page.goto(url, wait_until="domcontentloaded")
 
     if "rate limit" in await page.content():
         raise RateLimited()
@@ -30,6 +30,5 @@ async def extract_url_page(
     if close_page:
         await page.close()
 
-    await aria2c_file.write(f"{download.url}\n    out={filename}\n    continue=true\n")
-    await aria2c_file.flush()
     logger.info(f"Download URL: {download.url}, Filename: {filename}")
+    return (download.url, filename)

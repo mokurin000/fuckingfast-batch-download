@@ -5,7 +5,6 @@ from argparse import Namespace
 from collections.abc import Coroutine
 from pathlib import Path
 
-import aiofiles
 from tqdm.asyncio import tqdm_asyncio
 from tqdm.contrib.logging import logging_redirect_tqdm
 from playwright.async_api import async_playwright, Browser
@@ -14,12 +13,22 @@ import fuckingfast_batch_download.config as config
 from fuckingfast_batch_download.exceptions import FileNotFound, RateLimited
 from fuckingfast_batch_download.log import logger
 from fuckingfast_batch_download.scrap import extract_url_page
-from fuckingfast_batch_download.utils import consume_tasks, on_page, launch_browser
+from fuckingfast_batch_download.utils import (
+    consume_tasks,
+    on_page,
+    launch_browser,
+    export_to_file,
+)
 
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 GLS/100.10.9939.100"
 
 
-async def worker_func(tasks: Queue[Coroutine], tqdm: tqdm_asyncio, browser: Browser):
+async def worker_func(
+    tasks: Queue[Coroutine],
+    tqdm: tqdm_asyncio,
+    browser: Browser,
+    results: list[tuple[str, str]],
+):
     worker_name = asyncio.current_task().get_name()
 
     ctx = await browser.new_context(user_agent=USER_AGENT, locale="en_US")
@@ -35,8 +44,9 @@ async def worker_func(tasks: Queue[Coroutine], tqdm: tqdm_asyncio, browser: Brow
             break
 
         try:
-            url, outfile = payload
-            await extract_url_page(page, url, outfile, close_page=False)
+            url = payload
+            result = await extract_url_page(page, url, close_page=False)
+            results.append(result)
         except RateLimited:
             logger.error("rate limit! exiting")
 
@@ -72,15 +82,20 @@ def run_with_args(args: Namespace):
 async def concurrent_start(urls: list[str], browser: Browser):
     tasks = Queue()
     tqdm = tqdm_asyncio(total=len(urls))
+    results = []
     workers = [
-        asyncio.create_task(worker_func(tasks, tqdm, browser), name=f"worker_{i+1}")
+        asyncio.create_task(
+            worker_func(tasks, tqdm, browser, results), name=f"worker_{i+1}"
+        )
         for i in range(config.MAX_WORKERS)
     ]
 
-    async with aiofiles.open(config.ARIA2_OUTPUT, mode="a", encoding="utf-8") as f:
-        for url in urls:
-            await tasks.put((url, f))
-        await tasks.join()
+    for url in urls:
+        await tasks.put(url)
+    await tasks.join()
+
+    if config.ARIA2_OUTPUT is not None:
+        export_to_file(results, config.ARIA2_OUTPUT)
 
     for _ in workers:
         await tasks.put(None)
@@ -96,16 +111,20 @@ async def start(urls: list[str], browser: Browser):
         await ctx.tracing.start(screenshots=True, snapshots=True, name="fuckingfast")
 
     page = await ctx.new_page()
-    async with aiofiles.open(config.ARIA2_OUTPUT, "a", encoding="utf-8") as f:
-        for url in tqdm_asyncio(urls):
-            try:
-                await extract_url_page(page, url, aria2c_file=f)
-            except RateLimited:
-                logger.error("rate limit! exiting")
-                break
-            except FileNotFound as e:
-                logger.warning(f"{e.filename} not found!")
 
+    results = []
+    for url in tqdm_asyncio(urls):
+        try:
+            result = await extract_url_page(page, url)
+            results.append(result)
+        except RateLimited:
+            logger.error("rate limit! exiting")
+            break
+        except FileNotFound as e:
+            logger.warning(f"{e.filename} not found!")
+
+    if config.ARIA2_OUTPUT is not None:
+        export_to_file(results, config.ARIA2_OUTPUT)
     if config.SAVE_TRACE:
         await ctx.tracing.stop(path="trace.zip")
     await ctx.close()
