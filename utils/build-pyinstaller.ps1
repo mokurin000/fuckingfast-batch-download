@@ -1,7 +1,7 @@
 $project = "fuckingfast_batch_download"
 $env_name = $project + "-pyinstaller"
 
-micromamba create -n $project -y "python<3.12"
+micromamba create -n $env_name -y "python<3.12"
 micromamba activate $env_name
 micromamba install pyinstaller -y
 
@@ -11,8 +11,8 @@ $CLEAN_OPT = '--clean', '--noconfirm'
 $HIDE_WINDOW = '--noconsole'
 $HIDDEN_DEPS = '--hidden-import=tkinter', '--collect-data=cli2gui'
 
-pyinstaller @HIDDEN_DEPS --optimize 2 -D -n scrap-gui @CLEAN_OPT $HIDE_WINDOW src/$project/source/fitgirl/gui.py
-pyinstaller @HIDDEN_DEPS --optimize 2 -D -n extract-gui @CLEAN_OPT src/$project/gui.py
+pyinstaller @HIDDEN_DEPS --optimize 2 -D -n scrap-gui @CLEAN_OPT $HIDE_WINDOW src/$project/ui/scrap_gui.py
+pyinstaller @HIDDEN_DEPS --optimize 2 -D -n extract-gui @CLEAN_OPT src/$project/ui/main_gui.py
 
 # reuse library
 Move-Item .\dist\scrap-gui\scrap-gui.exe dist\extract-gui

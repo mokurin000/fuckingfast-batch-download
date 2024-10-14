@@ -19,7 +19,7 @@ $META = '--product-name=FuckingFast Batch Download', '--company-name=mokurin000'
 $OPTIMIZE = "--lto=yes", "--jobs=20"
 
 $nuitka_output = "nuitka-chromium-dist"
-nuitka @META @OPTIMIZE --standalone --output-dir=$nuitka_output --main=src\fuckingfast_batch_download\gui.py
+nuitka @META @OPTIMIZE --standalone --output-dir=$nuitka_output --main=src\fuckingfast_batch_download\ui\main_gui.py
 $result_path = $nuitka_output + "/gui.dist/playwright"
 mkdir -Force $result_path
 

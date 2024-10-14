@@ -19,8 +19,8 @@ $HIDDEN_DEPS = '--hidden-import=tkinter', '--collect-data=cli2gui'
 
 playwright install chromium
 
-pyinstaller @HIDDEN_DEPS --optimize 2 -D -n scrap-gui-chromium @CLEAN_OPT $HIDE_WINDOW src/$project/source/fitgirl/gui.py
-pyinstaller @HIDDEN_DEPS --optimize 2 -D -n extract-gui-chromium @CLEAN_OPT src/$project/gui.py
+pyinstaller @HIDDEN_DEPS --optimize 2 -D -n scrap-gui-chromium @CLEAN_OPT $HIDE_WINDOW src/$project/ui/scrap_gui.py
+pyinstaller @HIDDEN_DEPS --optimize 2 -D -n extract-gui-chromium @CLEAN_OPT src/$project/ui/main_gui.py
 
 # reuse library
 Move-Item .\dist\scrap-gui-chromium\scrap-gui-chromium.exe dist\extract-gui-chromium
