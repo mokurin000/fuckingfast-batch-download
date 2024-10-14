@@ -1,8 +1,8 @@
 $project = "fuckingfast_batch_download"
 micromamba create -n $project -y "python<3.12"
 micromamba activate $project
+micromamba install pyinstaller -y
 micromamba run pip install -e .
-micromamba run pip install pyinstaller
 
 $ENV:HTTPS_PROXY = "http://127.0.0.1:7890"
 
