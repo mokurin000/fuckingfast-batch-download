@@ -19,3 +19,5 @@ Remove-Item -Recurse -Force dist\scrap-gui
 
 # Optional, comment this to debug pyinstaller spec.
 Remove-Item *.spec
+
+micromamba env remove -n $project -y
