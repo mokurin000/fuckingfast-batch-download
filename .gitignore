@@ -167,3 +167,6 @@ trace*.zip
 *.rar
 *.bin
 *.aria2
+
+# Nuitka target
+*.dist
