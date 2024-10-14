@@ -10,6 +10,8 @@ Extract direct link from `fuckingfast.co`, to semi-automate download large games
 
 [Download] pre-built windows release from releases.
 
+Hint: to use them as CLI tool, add `--disable-cli2gui` to your arguments.
+
 ### Via pipx
 
 ```bash
