@@ -1,6 +1,8 @@
 $project = "fuckingfast_batch_download"
+$env_name = $project
+
 micromamba create -n $project -y "python<3.12"
-micromamba activate $project
+micromamba activate $env_name
 micromamba install pyinstaller -y
 micromamba run pip install -e .
 
@@ -18,4 +20,4 @@ Remove-Item -Recurse -Force dist\scrap-gui
 # Optional, comment this to debug pyinstaller spec.
 Remove-Item *.spec
 
-micromamba env remove -n $project -y
+micromamba env remove -n $env_name -y

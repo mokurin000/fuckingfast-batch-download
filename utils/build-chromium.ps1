@@ -1,11 +1,16 @@
 $project = "fuckingfast_batch_download"
-micromamba create -n $project-chromium -y "python<3.12"
-micromamba activate $project-chromium
+$env_name = $project + "-chromium"
+
+micromamba create -n $env_name -y "python<3.12"
+micromamba activate $env_name
 micromamba install pyinstaller -y
 micromamba run pip install -e .
 
 $ENV:PLAYWRIGHT_BROWSERS_PATH = 0
-$ENV:HTTPS_PROXY = "http://127.0.0.1:7890"
+$proxy_info = (Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings')
+if ($proxy_info.proxyEnable) {
+    $ENV:HTTPS_PROXY = $proxy_info.proxyServer
+}
 
 $CLEAN_OPT = '--clean', '--noconfirm'
 $HIDE_WINDOW = '--noconsole'
@@ -23,4 +28,4 @@ Remove-Item -Recurse -Force dist\scrap-gui-chromium
 # Optional, comment this to debug pyinstaller spec.
 Remove-Item *.spec
 
-micromamba env remove -n $project-chromium -y
+micromamba env remove -n $env_name -y
