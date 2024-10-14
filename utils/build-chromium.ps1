@@ -1,8 +1,8 @@
 $project = "fuckingfast_batch_download"
-micromamba create -n $project-chromium "python<3.12"
+micromamba create -n $project-chromium -y "python<3.12"
 micromamba activate $project-chromium
 micromamba run pip install -e .
-micromamba install pyinstaller
+micromamba run pip install pyinstaller
 
 $ENV:PLAYWRIGHT_BROWSERS_PATH = 0
 $ENV:HTTPS_PROXY = "http://127.0.0.1:7890"
