@@ -3,7 +3,6 @@ import argparse
 from asyncio import Queue
 from argparse import Namespace
 from collections.abc import Coroutine
-from pathlib import Path
 
 from tqdm.asyncio import tqdm_asyncio
 from tqdm.contrib.logging import logging_redirect_tqdm
@@ -70,7 +69,7 @@ def run_with_args(args: Namespace):
     config.TIMEOUT_PER_PAGE = int(args.timeout)
     config.MAX_WORKERS = int(args.max_workers)
     config.URLS_INPUT = args.urls_file
-    config.ARIA2_OUTPUT = args.aria2c_file
+    config.ARIA2_OUTPUT = str(args.aria2c_file)
     config.SAVE_TRACE = bool(args.save_trace)
     config.HEADLESS = not bool(args.no_headless)
     config.SKIP_EDGE = bool(args.skip_edge)
@@ -158,7 +157,7 @@ def main():
     parser.add_argument(
         "aria2c_file",
         help="Output file for aria2c download links",
-        type=Path,
+        type=str,
     )
     parser.add_argument(
         "--timeout", type=int, default=5000, help="Timeout per page (ms)"
