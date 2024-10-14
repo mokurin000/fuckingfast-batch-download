@@ -1,5 +1,5 @@
 $project = "fuckingfast_batch_download"
-$env_name = $project + "-chromium"
+$env_name = $project + "-pyinstaller-chromium"
 
 micromamba create -n $env_name -y "python<3.12"
 micromamba activate $env_name
@@ -9,7 +9,7 @@ micromamba run pip install -e .
 $ENV:PLAYWRIGHT_BROWSERS_PATH = 0
 $proxy_info = (Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings')
 if ($proxy_info.proxyEnable) {
-    $ENV:HTTPS_PROXY = $proxy_info.proxyServer
+    $ENV:HTTPS_PROXY = "http://" + $proxy_info.proxyServer
 }
 
 $CLEAN_OPT = '--clean', '--noconfirm'

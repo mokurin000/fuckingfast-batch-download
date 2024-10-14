@@ -1,5 +1,5 @@
 $project = "fuckingfast_batch_download"
-$env_name = $project
+$env_name = $project + "-pyinstaller"
 
 micromamba create -n $project -y "python<3.12"
 micromamba activate $env_name
