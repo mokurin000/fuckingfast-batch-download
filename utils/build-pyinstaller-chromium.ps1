@@ -7,7 +7,7 @@ if ($env:FORCE_RECREATION) {
 else {
     $existing_envs = micromamba env list --json | ConvertFrom-Json | Select-Object -ExpandProperty envs | ForEach-Object { (Split-Path $_ -Leaf) }
     if ($existing_envs -notcontains $env_name) {
-        micromamba create -n $env_name "python<3.12"
+        micromamba create -n $env_name -y "python<3.12"
     }
 }
 
