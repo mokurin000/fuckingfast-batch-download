@@ -20,9 +20,10 @@ $OPTIMIZE = "--lto=yes", "--jobs=20"
 
 $nuitka_output = "nuitka-chromium-dist"
 nuitka @META @OPTIMIZE --standalone --output-dir=$nuitka_output --main=src\fuckingfast_batch_download\ui\main_gui.py
-$result_path = $nuitka_output + "/gui.dist/playwright"
-mkdir -Force $result_path
 
+# Copy playwright
+$result_path = $nuitka_output + "/main_gui.dist/playwright"
+mkdir -Force $result_path
 $playwright_path = (python -c 'from importlib.resources import files; print(files("playwright"))')
 Copy-Item -Recurse -Force -Path $playwright_path"/driver" -Destination $result_path
 
