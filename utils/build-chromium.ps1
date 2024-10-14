@@ -11,10 +11,10 @@ $CLEAN_OPT = '--clean', '--noconfirm'
 $HIDE_WINDOW = '--noconsole'
 $HIDDEN_DEPS = '--hidden-import=tkinter', '--collect-data=cli2gui'
 
-playwright install chromium
+micromamba run playwright install chromium
 
-pyinstaller @HIDDEN_DEPS --optimize 2 -D -n scrap-gui-chromium @CLEAN_OPT $HIDE_WINDOW src/$project/source/fitgirl/gui.py
-pyinstaller @HIDDEN_DEPS --optimize 2 -D -n extract-gui-chromium @CLEAN_OPT src/$project/gui.py
+micormamba run pyinstaller @HIDDEN_DEPS --optimize 2 -D -n scrap-gui-chromium @CLEAN_OPT $HIDE_WINDOW src/$project/source/fitgirl/gui.py
+micormamba run pyinstaller @HIDDEN_DEPS --optimize 2 -D -n extract-gui-chromium @CLEAN_OPT src/$project/gui.py
 
 # reuse library
 Move-Item .\dist\scrap-gui-chromium\scrap-gui-chromium.exe dist\extract-gui-chromium
