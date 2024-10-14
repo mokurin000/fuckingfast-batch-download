@@ -22,11 +22,11 @@ playwright install chromium
 pyinstaller @HIDDEN_DEPS --optimize 2 -D -n scrap-gui-chromium @CLEAN_OPT $HIDE_WINDOW src/$project/ui/scrap_gui.py
 pyinstaller @HIDDEN_DEPS --optimize 2 -D -n extract-gui-chromium @CLEAN_OPT src/$project/ui/main_gui.py
 
+micromamba env remove -n $env_name -y
+
 # reuse library
 Move-Item .\dist\scrap-gui-chromium\scrap-gui-chromium.exe dist\extract-gui-chromium
 Remove-Item -Recurse -Force dist\scrap-gui-chromium
 
 # Optional, comment this to debug pyinstaller spec.
 Remove-Item *.spec
-
-micromamba env remove -n $env_name -y
