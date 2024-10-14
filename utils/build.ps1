@@ -4,8 +4,6 @@ micromamba activate $project
 micromamba install pyinstaller -y
 micromamba run pip install -e .
 
-$ENV:HTTPS_PROXY = "http://127.0.0.1:7890"
-
 $CLEAN_OPT = '--clean', '--noconfirm'
 $HIDE_WINDOW = '--noconsole'
 $HIDDEN_DEPS = '--hidden-import=tkinter', '--collect-data=cli2gui'
