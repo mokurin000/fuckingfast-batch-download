@@ -1,7 +1,13 @@
 $project = "fuckingfast_batch_download"
 $env_name = $project + "-nuitka-chromium"
 
-micromamba create -n $env_name -y "python<3.12"
+if ($env:FORCE_RECREATION) {
+    micromamba create -n $env_name -y "python<3.12"
+}
+else {
+    micromamba create -n $env_name "python<3.12"
+}
+
 micromamba activate $env_name
 micromamba install -c conda-forge nuitka ordered-set -y
 
@@ -29,7 +35,9 @@ mkdir -Force $result_path
 $playwright_path = (python -c 'from importlib.resources import files; print(files("playwright"))')
 Copy-Item -Recurse -Force -Path $playwright_path"/driver" -Destination $result_path
 
-micromamba env remove -n $env_name -y
+if ($env:SKIP_CREATE_ENV) {
+    micromamba env remove -n $env_name -y
+}
 
 # Move scrap-gui to main-gui directory
 Move-Item $nuitka_output/scrap_gui.dist/scrap_gui.exe $nuitka_output/main_gui.dist
