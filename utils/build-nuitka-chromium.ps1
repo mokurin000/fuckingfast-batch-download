@@ -38,7 +38,7 @@ mkdir -Force $result_path
 $playwright_path = (python -c 'from importlib.resources import files; print(files("playwright"))')
 Copy-Item -Recurse -Force -Path $playwright_path"/driver" -Destination $result_path
 
-if ($env:SKIP_CREATE_ENV) {
+if ($env:REMOVE_ENV) {
     micromamba env remove -n $env_name -y
 }
 

@@ -31,7 +31,7 @@ playwright install chromium
 pyinstaller @HIDDEN_DEPS --optimize 2 -D -n scrap-gui-chromium @CLEAN_OPT $HIDE_WINDOW src/$project/ui/scrap_gui.py
 pyinstaller @HIDDEN_DEPS --optimize 2 -D -n extract-gui-chromium @CLEAN_OPT src/$project/ui/main_gui.py
 
-if ($env:SKIP_CREATE_ENV) {
+if ($env:REMOVE_ENV) {
     micromamba env remove -n $env_name -y
 }
 
