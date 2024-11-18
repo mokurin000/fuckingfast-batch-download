@@ -34,5 +34,5 @@ if ($env:REMOVE_ENV) {
 }
 
 # Move scrap-gui to main-gui directory
-Move-Item $nuitka_output/scrap_gui.dist/scrap_gui $nuitka_output/main_gui.dist
+Move-Item $nuitka_output/scrap_gui.dist/scrap_gui.bin $nuitka_output/main_gui.dist
 Remove-Item -Recurse -Force $nuitka_output/scrap_gui.dist
