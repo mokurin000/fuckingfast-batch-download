@@ -13,5 +13,9 @@ dependencies = [
 ]
 license = { text = "MIT" }
 
+[project.scripts]
+fuckingfast-extract = "fuckingfast_batch_download.__main__:main"
+fitgirl-scrap = "fuckingfast_batch_download.source.fitgirl.__main__:_main"
+
 [tool.uv]
 dev-dependencies = []
