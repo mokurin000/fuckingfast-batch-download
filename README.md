@@ -42,9 +42,9 @@ git pull
 
 ```bash
 # Scrap fuckingfast.co urls
-python3 -m fuckingfast_batch_download.source.fitgirl.gui
+python3 -m fuckingfast_batch_download.ui.scrap_gui
 # Extract direct download links
-python3 -m fuckingfast_batch_download.gui
+python3 -m fuckingfast_batch_download.ui.main_gui
 # Download & Enjoy!
 aria2c -x 4 -s 1 --save-session=aria2.session -i output.txt 
 ```
