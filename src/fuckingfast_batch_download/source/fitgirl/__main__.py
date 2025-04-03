@@ -15,7 +15,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-async def scrap(ctx: BrowserContext, url: str, timeout: float):
+async def scrap(
+    ctx: BrowserContext, url: str, timeout: float, output_filename: str = None
+):
     page = await ctx.new_page()
     logger.info(f"Navigating to {url}")
     await page.goto(url, wait_until="domcontentloaded", timeout=timeout)
@@ -40,9 +42,13 @@ async def scrap(ctx: BrowserContext, url: str, timeout: float):
     fuckingfast_links = [
         link for link in hoster_links if link.startswith("https://fuckingfast.co")
     ]
-    output = xdialog.save_file(
-        title="URL list file", filetypes=[("Text files", "*.txt")]
-    )
+
+    if output_filename:
+        output = output_filename
+    else:
+        output = xdialog.save_file(
+            title="URL list file", filetypes=[("Text files", "*.txt")]
+        )
 
     if not output:
         message = "User cancellation"
@@ -55,6 +61,7 @@ async def scrap(ctx: BrowserContext, url: str, timeout: float):
 
 async def run(args):
     headless = not args.no_headless
+    output_filename = args.output_filename
     async with async_playwright() as playwright:
         if not args.skip_edge:
             try:
@@ -69,7 +76,12 @@ async def run(args):
         context = await browser.new_context()
         await context.tracing.start(name="fitgirl scrap", title="fitgirl scrap")
         try:
-            await scrap(ctx=context, url=args.url, timeout=args.timeout)
+            await scrap(
+                ctx=context,
+                url=args.url,
+                timeout=args.timeout,
+                output_filename=output_filename,
+            )
         except PlaywrightError as e:
             xdialog.error(title="Scrap error", message=f"{e}")
         await context.tracing.stop(path="trace-fg.zip")
@@ -86,6 +98,12 @@ def _main():
         description="Scrap fitgirl fuckingfast links and save to a file."
     )
     parser.add_argument("url", type=str, help="The URL to scrap")
+    parser.add_argument(
+        "--output-filename",
+        type=str,
+        help="Save fetched links to this file",
+        required=False,
+    )
     parser.add_argument(
         "--timeout",
         type=float,
