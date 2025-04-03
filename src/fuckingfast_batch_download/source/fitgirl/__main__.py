@@ -24,21 +24,22 @@ async def scrap(
 
     links_loc = page.get_by_text("Filehoster: FuckingFast")
     links = await links_loc.all()
-    if not links:
-        message = "ERROR: fuckingfast source not found!"
-        logger.error(message)
-        xdialog.error(message=message)
-        return
-    if len(links) > 1:
-        message = "ERROR: please paste url of single game!"
+
+    if len(links) != 1:
+        message = "ERROR: please paste url of a game!"
         logger.error(message)
         xdialog.error(message=message)
         return
 
     hoster_links_elem = await page.locator("ul li div a").all()
-    hoster_links = await asyncio.gather(
-        *(tag.get_attribute("href") for tag in hoster_links_elem)
-    )
+
+    if hoster_links_elem:
+        hoster_links = await asyncio.gather(
+            *(tag.get_attribute("href") for tag in hoster_links_elem)
+        )
+    else:
+        hoster_links = [await links[0].get_attribute("href")]
+
     fuckingfast_links = [
         link for link in hoster_links if link.startswith("https://fuckingfast.co")
     ]
