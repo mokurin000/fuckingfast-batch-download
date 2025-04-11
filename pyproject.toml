@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
 dependencies = [
-    "cli2gui>=2024.3",
+    "cli2gui@git+https://github.com/FHPythonUtils/Cli2Gui.git@2025",
     "freesimplegui>=5.2.0.post1",
     "playwright>=1.51.0",
     "tqdm>=4.67.1",
