@@ -15,7 +15,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-async def scrap(
+async def scrape(
     ctx: BrowserContext, url: str, timeout: float, output_filename: str = None
 ):
     page = await ctx.new_page()
@@ -74,7 +74,7 @@ async def run(args):
         context = await browser.new_context()
         await context.tracing.start(name="fitgirl scrap", title="fitgirl scrap")
         try:
-            await scrap(
+            await scrape(
                 ctx=context,
                 url=args.url,
                 timeout=args.timeout,
