@@ -1,6 +1,6 @@
 import urllib.parse
-from pathlib import Path
 from asyncio import Queue
+from io import TextIOWrapper
 from collections.abc import Coroutine
 
 from playwright.async_api import Page, Playwright, Error as PlaywrightError
@@ -10,9 +10,7 @@ from fuckingfast_batch_download import config
 
 
 async def launch_browser(playwright: Playwright):
-    logger.info(
-        f"Starting browser with headless {config.HEADLESS}"
-    )
+    logger.info(f"Starting browser with headless {config.HEADLESS}")
 
     try:
         browser = await playwright.chromium.launch(
@@ -25,7 +23,7 @@ async def launch_browser(playwright: Playwright):
     return browser
 
 
-async def consume_tasks(tasks: Queue[Coroutine], worker_name):
+async def consume_tasks(tasks: Queue[Coroutine]):
     while True:
         payload = await tasks.get()
         tasks.task_done()
@@ -44,15 +42,13 @@ def on_page(page: Page):
         return page.close()
 
 
-def export_to_file(results: list[tuple[str, str]], output: Path | str):
+def export_to_file(results: list[tuple[str, str]], output: TextIOWrapper):
     def pair_to_str(pair: tuple[str, str]):
-        uri = pair[0]
-        filename = pair[1]
+        uri, filename = pair
         indent = " " * 4
         return f"{uri}\n{indent}out={filename}\n{indent}continue=true"
 
-    with open(output, "a", encoding="utf-8") as out:
-        out.write(
-            "\n".join(map(pair_to_str, sorted(results, key=lambda pair: pair[1])))
-            + "\n"
-        )
+    output.write(
+        "\n".join(map(pair_to_str, sorted(results, key=lambda pair: pair[1]))) + "\n"
+    )
+    output.flush()

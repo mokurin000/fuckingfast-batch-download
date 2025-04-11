@@ -15,7 +15,10 @@ license = { text = "MIT" }
 
 [project.scripts]
 fuckingfast-extract = "fuckingfast_batch_download.__main__:main"
-fitgirl-scrap = "fuckingfast_batch_download.source.fitgirl.__main__:_main"
+fitgirl-scrape = "fuckingfast_batch_download.source.fitgirl.__main__:_main"
+
+fuckingfast-extract-gui = "fuckingfast_batch_download.ui.scrap_gui:gui"
+fitgirl-scrape-gui = "fuckingfast_batch_download.ui.main_gui:gui"
 
 [tool.uv]
 package = true
@@ -23,3 +26,4 @@ dev-dependencies = ["fuckingfast-batch-download", "pyinstaller>=6.12.0"]
 
 [tool.uv.sources]
 fuckingfast-batch-download = { workspace = true }
+cli2gui = { git = "https://github.com/FHPythonUtils/Cli2Gui.git" }

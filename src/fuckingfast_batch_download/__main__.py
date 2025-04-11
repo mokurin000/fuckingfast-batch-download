@@ -11,7 +11,7 @@ from playwright.async_api import async_playwright, Browser
 import fuckingfast_batch_download.config as config
 from fuckingfast_batch_download.exceptions import FileNotFound, RateLimited
 from fuckingfast_batch_download.log import logger
-from fuckingfast_batch_download.scrap import extract_url_page
+from fuckingfast_batch_download.scrape import extract_url_page
 from fuckingfast_batch_download.utils import (
     consume_tasks,
     on_page,
@@ -69,7 +69,7 @@ def run_with_args(args: Namespace):
     config.TIMEOUT_PER_PAGE = int(args.timeout)
     config.MAX_WORKERS = int(args.max_workers)
     config.URLS_INPUT = args.urls_file
-    config.ARIA2_OUTPUT = str(args.aria2c_file)
+    config.ARIA2_OUTPUT = args.aria2c_file
     config.SAVE_TRACE = bool(args.save_trace)
     config.HEADLESS = not bool(args.no_headless)
 
@@ -83,7 +83,7 @@ async def concurrent_start(urls: list[str], browser: Browser):
     results = []
     workers = [
         asyncio.create_task(
-            worker_func(tasks, tqdm, browser, results), name=f"worker_{i+1}"
+            worker_func(tasks, tqdm, browser, results), name=f"worker_{i + 1}"
         )
         for i in range(config.MAX_WORKERS)
     ]
@@ -156,7 +156,7 @@ def main():
     parser.add_argument(
         "aria2c_file",
         help="Output file for aria2c download links",
-        type=str,
+        type=argparse.FileType("w", encoding="utf-8"),
     )
     parser.add_argument(
         "--timeout", type=int, default=5000, help="Timeout per page (ms)"

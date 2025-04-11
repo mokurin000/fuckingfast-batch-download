@@ -6,4 +6,4 @@ SAVE_TRACE: bool | None = None
 HEADLESS: bool | None = None
 
 URLS_INPUT: TextIOWrapper | None = None
-ARIA2_OUTPUT: str | None = None
+ARIA2_OUTPUT: TextIOWrapper | None = None
