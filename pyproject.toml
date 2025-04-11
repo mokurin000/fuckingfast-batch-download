@@ -5,10 +5,10 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
 dependencies = [
-    "cli2gui>=2024.2",
-    "freesimplegui>=5.1.1",
-    "playwright>=1.47.0",
-    "tqdm>=4.66.5",
+    "cli2gui>=2024.3",
+    "freesimplegui>=5.2.0.post1",
+    "playwright>=1.51.0",
+    "tqdm>=4.67.1",
     "xdialog>=1.2.0.1",
 ]
 license = { text = "MIT" }
@@ -18,4 +18,8 @@ fuckingfast-extract = "fuckingfast_batch_download.__main__:main"
 fitgirl-scrap = "fuckingfast_batch_download.source.fitgirl.__main__:_main"
 
 [tool.uv]
-dev-dependencies = []
+package = true
+dev-dependencies = ["fuckingfast-batch-download", "pyinstaller>=6.12.0"]
+
+[tool.uv.sources]
+fuckingfast-batch-download = { workspace = true }
