@@ -11,17 +11,15 @@ from fuckingfast_batch_download import config
 
 async def launch_browser(playwright: Playwright):
     logger.info(
-        f"Starting browser with headless {config.HEADLESS}, skip-edge {config.SKIP_EDGE}"
+        f"Starting browser with headless {config.HEADLESS}"
     )
-    if not config.SKIP_EDGE:
-        try:
-            browser = await playwright.chromium.launch(
-                headless=config.HEADLESS, channel="msedge"
-            )
-        except PlaywrightError:
-            logger.warning("Edge was not found, fallback to Chromium")
-            browser = await playwright.chromium.launch(headless=config.HEADLESS)
-    else:
+
+    try:
+        browser = await playwright.chromium.launch(
+            headless=config.HEADLESS, channel="msedge"
+        )
+    except PlaywrightError:
+        logger.warning("Edge was not found, fallback to Chromium")
         browser = await playwright.chromium.launch(headless=config.HEADLESS)
 
     return browser

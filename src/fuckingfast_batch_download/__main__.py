@@ -72,7 +72,6 @@ def run_with_args(args: Namespace):
     config.ARIA2_OUTPUT = str(args.aria2c_file)
     config.SAVE_TRACE = bool(args.save_trace)
     config.HEADLESS = not bool(args.no_headless)
-    config.SKIP_EDGE = bool(args.skip_edge)
 
     with logging_redirect_tqdm():
         asyncio.run(run())
@@ -174,11 +173,6 @@ def main():
         "--save-trace",
         action="store_true",
         help="Save trace files (for debugging only)",
-    )
-    parser.add_argument(
-        "--skip-edge",
-        action="store_true",
-        help="Don't use Edge",
     )
     args = parser.parse_args()
     run_with_args(args)

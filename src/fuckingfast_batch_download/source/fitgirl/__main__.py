@@ -64,16 +64,13 @@ async def run(args):
     headless = not args.no_headless
     output_filename = args.output_filename
     async with async_playwright() as playwright:
-        if not args.skip_edge:
-            try:
-                browser = await playwright.chromium.launch(
-                    headless=headless, channel="msedge"
-                )
-            except PlaywrightError:
-                xdialog.warning(message="Edge was not found, fallback to Chromium")
-                browser = await playwright.chromium.launch(headless=headless)
-        else:
+        try:
+            browser = await playwright.chromium.launch(
+                headless=headless, channel="msedge"
+            )
+        except PlaywrightError:
             browser = await playwright.chromium.launch(headless=headless)
+
         context = await browser.new_context()
         await context.tracing.start(name="fitgirl scrap", title="fitgirl scrap")
         try:
@@ -111,7 +108,6 @@ def _main():
         default=0,
         help="timeout (millisecond) for waiting page to load",
     )
-    parser.add_argument("--skip-edge", help="never launch msedge", action="store_true")
     parser.add_argument(
         "--no-headless", help="disable headless mode", action="store_true"
     )
