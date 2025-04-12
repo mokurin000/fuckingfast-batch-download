@@ -17,8 +17,8 @@ license = { text = "MIT" }
 fuckingfast-extract = "fuckingfast_batch_download.__main__:main"
 fitgirl-scrape = "fuckingfast_batch_download.source.fitgirl.__main__:_main"
 
-fuckingfast-extract-gui = "fuckingfast_batch_download.ui.scrap_gui:gui"
-fitgirl-scrape-gui = "fuckingfast_batch_download.ui.main_gui:gui"
+fuckingfast-extract-gui = "fuckingfast_batch_download.ui.main_gui:gui"
+fitgirl-scrape-gui = "fuckingfast_batch_download.ui.scrap_gui:gui"
 
 [tool.uv]
 package = true
