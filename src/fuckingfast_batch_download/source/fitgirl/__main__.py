@@ -1,6 +1,7 @@
 import asyncio
 import argparse
 import logging
+from io import TextIOWrapper
 
 import xdialog
 from playwright.async_api import (
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 async def scrape(
-    ctx: BrowserContext, url: str, timeout: float, output_filename: str = None
+    ctx: BrowserContext, url: str, timeout: float, output_file: TextIOWrapper
 ):
     page = await ctx.new_page()
     logger.info(f"Navigating to {url}")
@@ -44,25 +45,14 @@ async def scrape(
         link for link in hoster_links if link.startswith("https://fuckingfast.co")
     ]
 
-    if output_filename:
-        output = output_filename
-    else:
-        output = xdialog.save_file(
-            title="URL list file", filetypes=[("Text files", "*.txt")]
-        )
-
-    if not output:
-        message = "User cancellation"
-        logger.info(message)
-        xdialog.info(message=message)
-        return
-    with open(output, "w", encoding="utf-8") as f:
-        f.write("\n".join(fuckingfast_links) + "\n")
+    output_file.write("\n".join(fuckingfast_links) + "\n")
+    output_file.flush()
+    xdialog.info(message="saved url file!")
 
 
 async def run(args):
     headless = not args.no_headless
-    output_filename = args.output_filename
+    output_file: TextIOWrapper = args.output_file
     async with async_playwright() as playwright:
         try:
             browser = await playwright.chromium.launch(
@@ -78,7 +68,7 @@ async def run(args):
                 ctx=context,
                 url=args.url,
                 timeout=args.timeout,
-                output_filename=output_filename,
+                output_file=output_file,
             )
         except PlaywrightError as e:
             xdialog.error(title="Scrap error", message=f"{e}")
@@ -97,10 +87,9 @@ def _main():
     )
     parser.add_argument("url", type=str, help="The URL to scrap")
     parser.add_argument(
-        "--output-filename",
-        type=str,
+        "--output-file",
+        type=argparse.FileType("w", encoding="utf-8"),
         help="Save fetched links to this file",
-        required=False,
     )
     parser.add_argument(
         "--timeout",
