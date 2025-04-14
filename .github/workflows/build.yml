@@ -10,8 +10,6 @@ jobs:
             fail-fast: false
             matrix:
                 include:
-                    - target: aarch64-macos
-                      os: macos-latest
                     - target: x86_64-linux
                       os: ubuntu-latest
                     - target: x86_64-windows
