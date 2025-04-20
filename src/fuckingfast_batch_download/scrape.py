@@ -1,34 +1,32 @@
+import re
 from playwright.async_api import Page
 
 from fuckingfast_batch_download import config
 from fuckingfast_batch_download.log import logger
 from fuckingfast_batch_download.exceptions import RateLimited, FileNotFound
 
+DOWNLOAD_URL_REGEX = re.compile(
+    r'window\.open\(\"(https://fuckingfast.co/dl/[^"]*)\"\)'
+)
 
-async def extract_url_page(page: Page, url: str, close_page=False):
+
+async def extract_url_page(page: Page, url: str):
     """
     returns: tuple[uri, filename]
     """
     filename = url.split("#")[-1]
 
     logger.info(f"Navigating to URL: {url}")
-    await page.goto(url, wait_until="domcontentloaded")
+    await page.goto(url, wait_until="domcontentloaded", timeout=config.TIMEOUT_PER_PAGE)
 
-    if "rate limit" in await page.content():
+    content = await page.content()
+
+    if "rate limit" in content:
         raise RateLimited()
-    if await page.get_by_text("File Not Found Or Deleted").all():
+    if "File Not Found Or Deleted" in content:
         raise FileNotFound(filename=filename)
 
-    download_loc = page.locator("button.link-button")
-    async with page.expect_download(timeout=config.TIMEOUT_PER_PAGE) as download_info:
-        logger.info(f"Initiating download for {filename}...")
-        await download_loc.click()
-        await download_loc.click()
+    download_url: str = DOWNLOAD_URL_REGEX.findall(content)[0]
 
-    download = await download_info.value
-    await download.cancel()
-    if close_page:
-        await page.close()
-
-    logger.info(f"Download URL: {download.url}, Filename: {filename}")
-    return (download.url, filename)
+    logger.info(f"Download URL: {download_url}, Filename: {filename}")
+    return (download_url, filename)

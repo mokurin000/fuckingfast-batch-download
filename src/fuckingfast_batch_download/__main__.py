@@ -44,7 +44,7 @@ async def worker_func(
 
         try:
             url = payload
-            result = await extract_url_page(page, url, close_page=False)
+            result = await extract_url_page(page, url)
             results.append(result)
         except RateLimited:
             logger.error("rate limit! exiting")
