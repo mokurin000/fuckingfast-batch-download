@@ -17,7 +17,11 @@ logger = logging.getLogger(__name__)
 
 
 async def scrape(
-    ctx: BrowserContext, url: str, timeout: float, output_file: TextIOWrapper
+    ctx: BrowserContext,
+    url: str,
+    timeout: float,
+    output_file: TextIOWrapper,
+    skip_saved: bool,
 ):
     page = await ctx.new_page()
     logger.info(f"Navigating to {url}")
@@ -47,7 +51,8 @@ async def scrape(
 
     output_file.write("\n".join(fuckingfast_links) + "\n")
     output_file.flush()
-    xdialog.info(message="saved url file!")
+    if not skip_saved:
+        xdialog.info(message="saved url file!")
 
 
 async def run(args):
@@ -69,6 +74,7 @@ async def run(args):
                 url=args.url,
                 timeout=args.timeout,
                 output_file=output_file,
+                skip_saved=args.no_saved_dialog,
             )
         except PlaywrightError as e:
             xdialog.error(title="Scrap error", message=f"{e}")
@@ -99,6 +105,9 @@ def _main():
     )
     parser.add_argument(
         "--no-headless", help="disable headless mode", action="store_true"
+    )
+    parser.add_argument(
+        "--no-saved-dialog", help="don't popup after saved", action="store_true"
     )
     args = parser.parse_args()
 
