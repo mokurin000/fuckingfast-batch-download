@@ -3,12 +3,9 @@ import argparse
 import logging
 from io import TextIOWrapper
 
+from bs4 import BeautifulSoup
 import xdialog
-from playwright.async_api import (
-    async_playwright,
-    BrowserContext,
-    Error as PlaywrightError,
-)
+from aiohttp import ClientSession
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
@@ -17,33 +14,31 @@ logger = logging.getLogger(__name__)
 
 
 async def scrape(
-    ctx: BrowserContext,
+    session: ClientSession,
     url: str,
-    timeout: float,
     output_file: TextIOWrapper,
     skip_saved: bool,
 ):
-    page = await ctx.new_page()
-    logger.info(f"Navigating to {url}")
-    await page.goto(url, wait_until="domcontentloaded", timeout=timeout)
+    logger.info(f"fetching {url}")
 
-    links_loc = page.get_by_text("Filehoster: FuckingFast")
-    links = await links_loc.all()
+    async with session.get(url) as resp:
+        document = await resp.text()
+    soup = BeautifulSoup(document, features="lxml")
+
+    links = soup.find_all("a", string="Filehoster: FuckingFast")
 
     if len(links) != 1:
-        message = "ERROR: please paste url of a game!"
+        message = "ERROR: please paste url of single game!"
         logger.error(message)
         xdialog.error(message=message)
         return
 
-    hoster_links_elem = await page.locator("ul li div a").all()
+    hoster_links_elem = soup.select("ul li div a")
 
     if hoster_links_elem:
-        hoster_links = await asyncio.gather(
-            *(tag.get_attribute("href") for tag in hoster_links_elem)
-        )
+        hoster_links = [atag["href"] for atag in hoster_links_elem]
     else:
-        hoster_links = [await links[0].get_attribute("href")]
+        hoster_links = [links[0]["href"]]
 
     fuckingfast_links = [
         link for link in hoster_links if link.startswith("https://fuckingfast.co")
@@ -56,31 +51,14 @@ async def scrape(
 
 
 async def run(args):
-    headless = not args.no_headless
     output_file: TextIOWrapper = args.output_file
-    async with async_playwright() as playwright:
-        try:
-            browser = await playwright.chromium.launch(
-                headless=headless, channel="msedge"
-            )
-        except PlaywrightError:
-            browser = await playwright.chromium.launch(headless=headless)
-
-        context = await browser.new_context()
-        await context.tracing.start(name="fitgirl scrap", title="fitgirl scrap")
-        try:
-            await scrape(
-                ctx=context,
-                url=args.url,
-                timeout=args.timeout,
-                output_file=output_file,
-                skip_saved=args.no_saved_dialog,
-            )
-        except PlaywrightError as e:
-            xdialog.error(title="Scrap error", message=f"{e}")
-        await context.tracing.stop(path="trace-fg.zip")
-        await context.close()
-        await browser.close()
+    async with ClientSession() as session:
+        await scrape(
+            session=session,
+            url=args.url,
+            output_file=output_file,
+            skip_saved=args.no_saved_dialog,
+        )
 
 
 def main(args):
@@ -96,15 +74,6 @@ def _main():
         "--output-file",
         type=argparse.FileType("w", encoding="utf-8"),
         help="Save fetched links to this file",
-    )
-    parser.add_argument(
-        "--timeout",
-        type=float,
-        default=0,
-        help="timeout (millisecond) for waiting page to load",
-    )
-    parser.add_argument(
-        "--no-headless", help="disable headless mode", action="store_true"
     )
     parser.add_argument(
         "--no-saved-dialog", help="don't popup after saved", action="store_true"

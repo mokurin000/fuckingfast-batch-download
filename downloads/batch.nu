@@ -1,4 +1,5 @@
 const urls = [
+    https://fitgirl-repacks.site/crow-country/
     https://fitgirl-repacks.site/gta-5-enhanced/
 ];
 
