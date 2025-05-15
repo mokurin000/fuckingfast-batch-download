@@ -20,7 +20,7 @@ jobs:
             - name: Install uv
               uses: astral-sh/setup-uv@v5
             - name: Build with pyinstaller
-              run: bash -x ./utils/with-chromium.sh
+              run: bash -x ./utils/bundle.sh
             - name: Prepare assets
               shell: bash
               run: |
