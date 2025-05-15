@@ -15,7 +15,4 @@ uv run pyinstaller --optimize 2 -D -n extract-gui-chromium \
     --hidden-import=tkinter --collect-data=cli2gui \
     src/$project/ui/main_gui.py
 
-# reuse library
-mv ./dist/scrap-gui-chromium/scrap-gui-chromium* ./dist/extract-gui-chromium
-rm -rf 'dist/scrap-gui-chromium'
 rm *.spec

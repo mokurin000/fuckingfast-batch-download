@@ -1,7 +1,7 @@
 import re
-from playwright.async_api import Page
 
-from fuckingfast_batch_download import config
+from aiohttp import ClientSession
+
 from fuckingfast_batch_download.log import logger
 from fuckingfast_batch_download.exceptions import RateLimited, FileNotFound
 
@@ -10,16 +10,14 @@ DOWNLOAD_URL_REGEX = re.compile(
 )
 
 
-async def extract_url_page(page: Page, url: str):
+async def extract_url_page(session: ClientSession, url: str):
     """
     returns: tuple[uri, filename]
     """
     filename = url.split("#")[-1]
 
-    logger.info(f"Navigating to URL: {url}")
-    await page.goto(url, wait_until="domcontentloaded", timeout=config.TIMEOUT_PER_PAGE)
-
-    content = await page.content()
+    async with session.get(url) as resp:
+        content = await resp.text()
 
     if "rate limit" in content:
         raise RateLimited()

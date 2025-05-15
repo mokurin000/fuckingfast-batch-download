@@ -1,6 +1,5 @@
 const urls = [
-    https://fitgirl-repacks.site/artisan-td/
-    https://fitgirl-repacks.site/short-snow/
+    https://fitgirl-repacks.site/gta-5-enhanced/
 ];
 
 for $url in $urls {
@@ -8,5 +7,5 @@ for $url in $urls {
     let url_file = ($name + ".txt");
     let aria2_file = ($name + "_input.txt");
     uv run python -m fuckingfast_batch_download.source.fitgirl --output-file $url_file --no-saved-dialog $url
-    uv run python -m fuckingfast_batch_download $url_file $aria2_file
+    uv run python -m fuckingfast_batch_download --max-workers 3 $url_file $aria2_file
 }
