@@ -1,9 +1,6 @@
 uv sync
 
-export PLAYWRIGHT_BROWSERS_PATH=0
 project="fuckingfast_batch_download"
-
-uv run playwright install chromium
 
 uv run pyinstaller --optimize 2 -D -n scrap-gui-chromium \
     --noconsole \
