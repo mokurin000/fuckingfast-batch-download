@@ -14,7 +14,6 @@ from fuckingfast_batch_download.log import logger
 from fuckingfast_batch_download.scrape import extract_url_page
 from fuckingfast_batch_download.utils import (
     consume_tasks,
-    on_page,
     launch_browser,
     export_to_file,
 )
@@ -31,7 +30,6 @@ async def worker_func(
     worker_name = asyncio.current_task().get_name()
 
     ctx = await browser.new_context(user_agent=USER_AGENT, locale="en_US")
-    ctx.on("page", on_page)
     if config.SAVE_TRACE:
         await ctx.tracing.start(screenshots=True, snapshots=True, name="fuckingfast")
     page = await ctx.new_page()
@@ -104,7 +102,6 @@ async def concurrent_start(urls: list[str], browser: Browser):
 
 async def start(urls: list[str], browser: Browser):
     ctx = await browser.new_context(user_agent=USER_AGENT, locale="en_US")
-    ctx.on("page", on_page)
     if config.SAVE_TRACE:
         await ctx.tracing.start(screenshots=True, snapshots=True, name="fuckingfast")
 
