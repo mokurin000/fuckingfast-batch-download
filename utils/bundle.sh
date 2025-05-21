@@ -1,6 +1,4 @@
 uv sync
-# pillow isn't actually needed
-uv pip uninstall pillow
 project="fuckingfast_batch_download"
 
 uv run pyinstaller --optimize 2 -D -n scrap-gui \

@@ -20,7 +20,7 @@ def wrapper(args):
 
 # Set up Cli2Gui
 decorator_function = Cli2Gui(
-    gui="freesimplegui",
+    gui="dearpygui",
     run_function=wrapper,
     auto_enable=True,
     program_name="fuckingfast-fetch",
