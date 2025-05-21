@@ -1,5 +1,9 @@
 # fuckingfast-batch-download
 
+> A [much more lightwright version](https://github.com/mokurin000/fitgirl-ddl) in Rust is out!
+>
+> It comes with less than 2 MiB binary size, runs faster!
+
 Extract direct link from `fuckingfast.co`, to semi-automate download large games from fitgirl.
 
 ## Usage
